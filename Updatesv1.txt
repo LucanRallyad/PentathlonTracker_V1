@@ -1,0 +1,4 @@
+In mobile view you can still scroll with a page up: 
+For example the swimming times page you can scroll in the background and no graph is displayed on mobile
+Make it so that when scrolling through a sheet the side page of the atheletes is condensed to a initial and then the top row also follows you so you can alwasy see what you are looking at. 
+When signing in it takes multiple sign in attempts do sucessfully sign in 

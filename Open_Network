@@ -1,0 +1,6 @@
+How to use it:
+Start your dev server:
+   cd pentathlon-tracker   npm run dev
+Access from other devices:
+From your computer: http://localhost:3000 or http://172.30.220.214:3000
+From other devices on the same network: http://172.30.220.214:3000
