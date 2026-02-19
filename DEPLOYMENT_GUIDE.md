@@ -84,7 +84,7 @@ DATABASE_URL="postgresql://user:password@host:5432/database?schema=public"
 
 # NextAuth Configuration
 NEXTAUTH_SECRET="your-random-secret-here-min-32-chars"
-NEXTAUTH_URL="https://your-domain.com"
+NEXTAUTH_URL="https://pentathlon.lucanmarsh.com"  # Use your preferred subdomain
 
 # Encryption Key (for sensitive data)
 ENCRYPTION_KEY="your-encryption-key-min-32-chars"
@@ -293,23 +293,26 @@ openssl rand -base64 32
 
 ## Custom Domain Configuration
 
-### Vercel Custom Domain:
+**📋 For detailed domain setup instructions, see [DOMAIN_SETUP.md](./DOMAIN_SETUP.md)**
 
-1. **Add Domain:**
-   - Go to Project Settings → Domains
-   - Enter your domain name
-   - Follow DNS configuration instructions
+### Quick Overview:
 
-2. **DNS Configuration:**
-   - Add a CNAME record:
-     - Name: `@` or `www`
-     - Value: `cname.vercel-dns.com`
-   - Or add an A record (for apex domain):
-     - Vercel will provide IP addresses
+1. **Add Domain in Platform:**
+   - Vercel: Project Settings → Domains → Add `pentathlon.lucanmarsh.com`
+   - Railway: Service Settings → Networking → Add Custom Domain
+   - Netlify: Site Settings → Domain Management → Add Custom Domain
 
-3. **SSL Certificate:**
-   - Vercel automatically provisions SSL certificates
-   - Usually takes a few minutes
+2. **Configure DNS:**
+   - Add CNAME record at your domain registrar (where you bought lucanmarsh.com)
+   - Point to platform-provided CNAME target
+   - Wait for DNS propagation (5 minutes to 2 hours)
+
+3. **Update Environment Variable:**
+   - Set `NEXTAUTH_URL=https://pentathlon.lucanmarsh.com` (or your chosen subdomain)
+
+4. **SSL Certificate:**
+   - Automatically provisioned by platform
+   - Usually ready within 5-60 minutes
 
 ### Railway Custom Domain:
 

@@ -25,7 +25,8 @@ vercel
 
 **Time:** ~10 minutes  
 **Cost:** Free tier available  
-**Domain:** Free `.vercel.app` domain included
+**Domain:** Free `.vercel.app` domain included  
+**Custom Domain:** Configure `pentathlon.lucanmarsh.com` - see [DOMAIN_SETUP.md](./DOMAIN_SETUP.md)
 
 ---
 
@@ -73,7 +74,7 @@ netlify deploy --prod
    - `DATABASE_URL` - PostgreSQL connection string
    - `NEXTAUTH_SECRET` - Generate: `openssl rand -base64 32`
    - `ENCRYPTION_KEY` - Generate: `openssl rand -base64 32`
-   - `NEXTAUTH_URL` - Your production URL
+   - `NEXTAUTH_URL` - Your production URL (e.g., `https://pentathlon.lucanmarsh.com`)
    - `NODE_ENV=production`
 
 3. **Update Prisma Schema:**
@@ -90,8 +91,9 @@ netlify deploy --prod
 2. Sign up at vercel.com
 3. Import GitHub repository
 4. Add PostgreSQL database in Vercel dashboard
-5. Set environment variables
-6. Deploy!
+5. Set environment variables (including `NEXTAUTH_URL`)
+6. Add custom domain `pentathlon.lucanmarsh.com` (see [DOMAIN_SETUP.md](./DOMAIN_SETUP.md))
+7. Deploy!
 
 **Full guide:** See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
 
@@ -112,5 +114,6 @@ npm start
 ## 🆘 Need Help?
 
 - **Detailed Guide:** [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
+- **Domain Setup:** [DOMAIN_SETUP.md](./DOMAIN_SETUP.md) - Configure `lucanmarsh.com`
 - **Checklist:** [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md)
 - **Database Migration:** [scripts/migrate-to-postgres.md](./scripts/migrate-to-postgres.md)
