@@ -5,6 +5,7 @@ interface FeedEntry {
   id: string;
   timestamp: string;
   discipline: string;
+  athleteId: string;
   athleteName: string;
   country: string;
   rawInput: string;
@@ -75,6 +76,7 @@ export async function GET(
       id: s.id,
       timestamp: s.updatedAt.toISOString(),
       discipline: "fencing_ranking",
+      athleteId: s.athleteId,
       athleteName: `${s.athlete.firstName} ${s.athlete.lastName}`,
       country: s.athlete.country,
       rawInput: `${s.victories} wins / ${s.totalBouts} bouts`,
@@ -86,6 +88,7 @@ export async function GET(
       id: s.id,
       timestamp: s.updatedAt.toISOString(),
       discipline: "fencing_de",
+      athleteId: s.athleteId,
       athleteName: `${s.athlete.firstName} ${s.athlete.lastName}`,
       country: s.athlete.country,
       rawInput: s.placement > 0 ? `${ordinal(s.placement)} place` : "Eliminated",
@@ -97,6 +100,7 @@ export async function GET(
       id: s.id,
       timestamp: s.updatedAt.toISOString(),
       discipline: "obstacle",
+      athleteId: s.athleteId,
       athleteName: `${s.athlete.firstName} ${s.athlete.lastName}`,
       country: s.athlete.country,
       rawInput: `${s.timeSeconds.toFixed(2)}s`,
@@ -108,6 +112,7 @@ export async function GET(
       id: s.id,
       timestamp: s.updatedAt.toISOString(),
       discipline: "swimming",
+      athleteId: s.athleteId,
       athleteName: `${s.athlete.firstName} ${s.athlete.lastName}`,
       country: s.athlete.country,
       rawInput: formatSwimTime(s.timeHundredths),
@@ -119,6 +124,7 @@ export async function GET(
       id: s.id,
       timestamp: s.updatedAt.toISOString(),
       discipline: "laser_run",
+      athleteId: s.athleteId,
       athleteName: `${s.athlete.firstName} ${s.athlete.lastName}`,
       country: s.athlete.country,
       rawInput: formatMinSec(s.finishTimeSeconds),
@@ -130,6 +136,7 @@ export async function GET(
       id: s.id,
       timestamp: s.updatedAt.toISOString(),
       discipline: "riding",
+      athleteId: s.athleteId,
       athleteName: `${s.athlete.firstName} ${s.athlete.lastName}`,
       country: s.athlete.country,
       rawInput: `${(s.knockdowns * 7 + s.disobediences * 10 + s.timeOverSeconds + s.otherPenalties * 10)} penalty pts`,

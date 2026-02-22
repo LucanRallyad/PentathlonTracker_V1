@@ -126,23 +126,31 @@ export default function ManageAthletesPage({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // ── Select search result → populate form ───────────────────────────────────
-  function selectAthlete(athlete: Athlete) {
-    const populated = {
-      firstName: athlete.firstName,
-      lastName: athlete.lastName,
-      country: athlete.country,
-      gender: athlete.gender,
-      ageCategory: athlete.ageCategory,
-      club: athlete.club || "",
-    };
-    setForm(populated);
-    setLinkedAthleteId(athlete.id);
-    setLinkedOriginal({ ...populated });
-    setSearchQuery("");
-    setSearchResults([]);
-    setShowSearch(false);
+  // ── Select search result → auto-add to competition ─────────────────────────
+  async function selectAthlete(athlete: Athlete) {
     setFormError("");
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/competitions/${id}/athletes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ athleteId: athlete.id, ageCategory: athlete.ageCategory }),
+      });
+      if (res.ok) {
+        const entry = await res.json();
+        setRoster((prev) => [...prev, entry]);
+        setSearchQuery("");
+        setSearchResults([]);
+        setShowSearch(false);
+      } else {
+        const data = await res.json();
+        setFormError(data.error || "Failed to add athlete.");
+      }
+    } catch {
+      setFormError("Network error. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   // ── Check if form was modified from the linked athlete ─────────────────────
@@ -363,7 +371,7 @@ export default function ManageAthletesPage({
                 }}
                 onFocus={() => searchResults.length > 0 && setShowSearch(true)}
                 className="flex-1 px-3 py-2.5 text-sm bg-transparent outline-none text-[#37352F] placeholder:text-[#C4C4C0]"
-                placeholder="Search existing athletes by name to pre-fill..."
+                placeholder="Search existing athletes to add..."
               />
               {searchQuery && (
                 <button
@@ -400,7 +408,7 @@ export default function ManageAthletesPage({
                         {athlete.club ? ` · ${athlete.club}` : ""}
                       </div>
                     </div>
-                    <span className="text-xs text-[#0B6E99] flex-shrink-0">Select</span>
+                    <span className="text-xs text-[#0B6E99] flex-shrink-0 font-medium">{submitting ? "Adding..." : "+ Add"}</span>
                   </button>
                 ))}
               </div>
@@ -411,6 +419,13 @@ export default function ManageAthletesPage({
                 No existing athletes found. Fill in the form to create a new one.
               </div>
             )}
+          </div>
+
+          {/* Separator */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 border-t border-[#E9E9E7]" />
+            <span className="text-xs text-[#9B9A97]">or create new athlete</span>
+            <div className="flex-1 border-t border-[#E9E9E7]" />
           </div>
 
           {/* Linked athlete banner */}

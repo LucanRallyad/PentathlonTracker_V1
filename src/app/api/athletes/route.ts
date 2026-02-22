@@ -57,7 +57,13 @@ export async function POST(req: NextRequest) {
       return validation.response;
     }
 
-    const data = validation.data;
+    const { country, ageCategory, gender, ...rest } = validation.data;
+    const data = {
+      ...rest,
+      country: country || "",
+      ageCategory: ageCategory || "",
+      gender: gender || "M",
+    };
     const athlete = await prisma.athlete.create({ data });
     return NextResponse.json(athlete, { status: 201 });
   } catch {

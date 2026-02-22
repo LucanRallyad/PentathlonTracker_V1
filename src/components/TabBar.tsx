@@ -24,7 +24,7 @@ export function TabBar({
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
             className={cn(
-              "px-4 py-2.5 text-sm font-medium transition-all duration-200 rounded-t-[calc(var(--radius)-2px)] relative whitespace-nowrap flex-shrink-0",
+              "px-4 py-2.5 text-sm font-medium transition-all duration-200 rounded-t-[calc(var(--radius)-2px)] relative whitespace-nowrap flex-1 text-center",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2",
               activeTab === tab.id
                 ? "text-[var(--foreground)] bg-[var(--card)] shadow-[var(--shadow-sm)]"

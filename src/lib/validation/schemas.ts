@@ -20,7 +20,7 @@ export const loginSchema = z.object({
 });
 
 export const athleteLoginSchema = z.object({
-  athleteId: z.string().uuid("Invalid athlete ID"),
+  athleteId: z.string().min(1, "Athlete ID is required"),
   dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
 });
 
@@ -35,7 +35,7 @@ export const trainingEntrySchema = z.object({
     "laserRun",
     "riding",
   ], {
-    errorMap: () => ({ message: "Invalid discipline" }),
+    error: "Invalid discipline",
   }),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
   notes: z.string().max(1000).nullable().optional(),
@@ -50,7 +50,7 @@ export const trainingEntrySchema = z.object({
 });
 
 export const deleteTrainingEntrySchema = z.object({
-  id: z.string().uuid("Invalid entry ID"),
+  id: z.string().min(1, "Entry ID is required"),
 });
 
 // ─── Competition Schemas ─────────────────────────────────────────────────────
@@ -97,45 +97,45 @@ export const competitionCreateSchema = z.object({
 // ─── Event Schema ───────────────────────────────────────────────────────────
 
 export const eventStatusUpdateSchema = z.object({
-  eventId: z.string().uuid("Invalid event ID"),
+  eventId: z.string().min(1, "Event ID is required"),
   status: z.enum(["pending", "in_progress", "completed"], {
-    errorMap: () => ({ message: "Status must be pending, in_progress, or completed" }),
+    error: "Status must be pending, in_progress, or completed",
   }),
 });
 
 // ─── Score Entry Schemas ────────────────────────────────────────────────────
 
 export const fencingRankingScoreSchema = z.object({
-  athleteId: z.string().uuid("Invalid athlete ID"),
+  athleteId: z.string().min(1, "Athlete ID is required"),
   victories: z.number().int().min(0).max(1000),
   totalBouts: z.number().int().min(1).max(1000),
 });
 
 export const fencingDEScoreSchema = z.object({
-  athleteId: z.string().uuid("Invalid athlete ID"),
+  athleteId: z.string().min(1, "Athlete ID is required"),
   placement: z.number().int().min(1).max(1000),
 });
 
 export const obstacleScoreSchema = z.object({
-  athleteId: z.string().uuid("Invalid athlete ID"),
+  athleteId: z.string().min(1, "Athlete ID is required"),
   timeSeconds: z.number().min(0).max(3600),
   penaltyPoints: z.number().int().min(0).max(1000).optional().default(0),
 });
 
 export const swimmingScoreSchema = z.object({
-  athleteId: z.string().uuid("Invalid athlete ID"),
+  athleteId: z.string().min(1, "Athlete ID is required"),
   timeHundredths: z.number().int().min(0).max(360000),
   penaltyPoints: z.number().int().min(0).max(1000).optional().default(0),
 });
 
 export const laserRunScoreSchema = z.object({
-  athleteId: z.string().uuid("Invalid athlete ID"),
+  athleteId: z.string().min(1, "Athlete ID is required"),
   finishTimeSeconds: z.number().min(0).max(3600),
   penaltySeconds: z.number().int().min(0).max(600).optional().default(0),
 });
 
 export const ridingScoreSchema = z.object({
-  athleteId: z.string().uuid("Invalid athlete ID"),
+  athleteId: z.string().min(1, "Athlete ID is required"),
   knockdowns: z.number().int().min(0).max(100),
   disobediences: z.number().int().min(0).max(100),
   timeOverSeconds: z.number().int().min(0).max(600).optional().default(0),
@@ -147,7 +147,7 @@ export const ridingScoreSchema = z.object({
 export const athleteCreateSchema = z.object({
   firstName: z.string().min(1, "First name is required").max(100),
   lastName: z.string().min(1, "Last name is required").max(100),
-  country: z.string().length(2, "Country must be 2-letter code").optional(),
+  country: z.string().length(2, "Country must be 2-letter code").default(""),
   ageCategory: z.string().max(50).optional(),
   gender: z.enum(["M", "F"]).optional(),
   club: z.string().max(255).nullable().optional(),
@@ -181,7 +181,7 @@ export async function validateRequest<T>(
     if (error instanceof z.ZodError) {
       const { AppError, ErrorCode } = await import("@/lib/errors/AppError");
       const validationErrors: Record<string, string> = {};
-      error.errors.forEach((err) => {
+      error.issues.forEach((err) => {
         const path = err.path.join(".");
         validationErrors[path] = err.message;
       });

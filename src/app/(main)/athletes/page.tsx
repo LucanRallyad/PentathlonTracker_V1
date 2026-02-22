@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { TopNav } from "@/components/TopNav";
-import { Search } from "lucide-react";
+import { useAuth } from "@/lib/useAuth";
+import { Search, Plus, X } from "lucide-react";
 import Link from "next/link";
 
 interface Athlete {
@@ -17,10 +18,22 @@ interface Athlete {
   _count?: { competitionAthletes: number };
 }
 
+const AGE_CATEGORIES = ["U9", "U11", "U13", "U15", "U17", "U19", "Junior", "Senior", "Masters"];
+
 export default function AthletesPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "super_admin" || user?.role === "admin";
   const [athletes, setAthletes] = useState<Athlete[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // Create form state
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    firstName: "", lastName: "", country: "CA", gender: "M", ageCategory: "Senior", club: "",
+  });
+  const [createError, setCreateError] = useState("");
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     const url = search
@@ -36,13 +49,149 @@ export default function AthletesPage() {
       .finally(() => setLoading(false));
   }, [search]);
 
+  async function handleCreateAthlete(e: React.FormEvent) {
+    e.preventDefault();
+    setCreateError("");
+    if (!createForm.firstName || !createForm.lastName) {
+      setCreateError("First name and last name are required.");
+      return;
+    }
+    setCreating(true);
+    try {
+      const res = await fetch("/api/athletes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...createForm,
+          club: createForm.club || null,
+        }),
+      });
+      if (res.ok) {
+        const newAthlete = await res.json();
+        setAthletes((prev) => [{ ...newAthlete, _count: { competitionAthletes: 0 } }, ...prev]);
+        setCreateForm({ firstName: "", lastName: "", country: "CA", gender: "M", ageCategory: "Senior", club: "" });
+        setShowCreateForm(false);
+      } else {
+        const data = await res.json();
+        setCreateError(data.error || "Failed to create athlete.");
+      }
+    } catch {
+      setCreateError("Network error.");
+    } finally {
+      setCreating(false);
+    }
+  }
+
   return (
     <>
       <TopNav breadcrumbs={[{ label: "Home", href: "/" }, { label: "Athletes" }]} />
       <div className="max-w-[900px] mx-auto px-4 md:px-6 py-8 md:py-12">
-        <h1 className="text-[28px] md:text-[40px] font-bold text-[#37352F] tracking-tight mb-6 md:mb-12 leading-tight">
-          Athletes
-        </h1>
+        <div className="flex items-center justify-between mb-6 md:mb-12">
+          <h1 className="text-[28px] md:text-[40px] font-bold text-[#37352F] tracking-tight leading-tight">
+            Athletes
+          </h1>
+          {isAdmin && (
+            <button
+              onClick={() => setShowCreateForm(!showCreateForm)}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#0B6E99] rounded-[4px] hover:bg-[#095a7d] transition-colors"
+            >
+              {showCreateForm ? <X size={14} /> : <Plus size={14} />}
+              {showCreateForm ? "Cancel" : "Create New Athlete"}
+            </button>
+          )}
+        </div>
+
+        {/* Create New Athlete Form */}
+        {showCreateForm && (
+          <div className="mb-6 border border-[#E9E9E7] rounded-[4px] bg-[#FBFBFA] p-4">
+            <h2 className="text-sm font-medium text-[#37352F] mb-3">Create New Athlete</h2>
+            <form onSubmit={handleCreateAthlete} className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-[#787774] mb-1">First Name</label>
+                  <input
+                    type="text"
+                    value={createForm.firstName}
+                    onChange={(e) => setCreateForm((f) => ({ ...f, firstName: e.target.value }))}
+                    className="w-full px-3 py-2 text-sm border border-[#E9E9E7] rounded-[3px] bg-white text-[#37352F] outline-none focus:border-[#0B6E99] transition-colors"
+                    placeholder="First name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#787774] mb-1">Last Name</label>
+                  <input
+                    type="text"
+                    value={createForm.lastName}
+                    onChange={(e) => setCreateForm((f) => ({ ...f, lastName: e.target.value }))}
+                    className="w-full px-3 py-2 text-sm border border-[#E9E9E7] rounded-[3px] bg-white text-[#37352F] outline-none focus:border-[#0B6E99] transition-colors"
+                    placeholder="Last name"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-[#787774] mb-1">Country</label>
+                  <input
+                    type="text"
+                    value={createForm.country}
+                    onChange={(e) => setCreateForm((f) => ({ ...f, country: e.target.value.toUpperCase().slice(0, 2) }))}
+                    className="w-full px-3 py-2 text-sm border border-[#E9E9E7] rounded-[3px] bg-white text-[#37352F] outline-none focus:border-[#0B6E99] transition-colors"
+                    placeholder="CA"
+                    maxLength={2}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#787774] mb-1">Gender</label>
+                  <select
+                    value={createForm.gender}
+                    onChange={(e) => setCreateForm((f) => ({ ...f, gender: e.target.value }))}
+                    className="w-full px-3 py-2 text-sm border border-[#E9E9E7] rounded-[3px] bg-white text-[#37352F] outline-none focus:border-[#0B6E99] transition-colors"
+                  >
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#787774] mb-1">Age Category</label>
+                  <select
+                    value={createForm.ageCategory}
+                    onChange={(e) => setCreateForm((f) => ({ ...f, ageCategory: e.target.value }))}
+                    className="w-full px-3 py-2 text-sm border border-[#E9E9E7] rounded-[3px] bg-white text-[#37352F] outline-none focus:border-[#0B6E99] transition-colors"
+                  >
+                    {AGE_CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#787774] mb-1">Club (optional)</label>
+                <input
+                  type="text"
+                  value={createForm.club}
+                  onChange={(e) => setCreateForm((f) => ({ ...f, club: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border border-[#E9E9E7] rounded-[3px] bg-white text-[#37352F] outline-none focus:border-[#0B6E99] transition-colors"
+                  placeholder="Club name"
+                />
+              </div>
+
+              {createError && (
+                <div className="text-sm text-[#E03E3E] bg-[#FBE4E4] px-3 py-2 rounded-[3px]">
+                  {createError}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={creating}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#0B6E99] rounded-[3px] hover:bg-[#095a7d] transition-colors disabled:opacity-50"
+              >
+                <Plus size={14} />
+                {creating ? "Creating..." : "Create Athlete"}
+              </button>
+            </form>
+          </div>
+        )}
 
         <div className="relative mb-6">
           <Search

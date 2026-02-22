@@ -19,7 +19,7 @@ import { calculateRiding } from "@/lib/scoring/riding";
 import type { AgeCategory } from "@/lib/scoring/types";
 import { useAuth } from "@/lib/useAuth";
 import Link from "next/link";
-import { Download, Star, StarOff, ArrowUp, ArrowDown, Printer } from "lucide-react";
+import { Download, Star, StarOff, ArrowUp, ArrowDown, Printer, Search } from "lucide-react";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -76,6 +76,7 @@ interface FeedEntry {
   id: string;
   timestamp: string;
   discipline: string;
+  athleteId: string;
   athleteName: string;
   country: string;
   rawInput: string;
@@ -184,7 +185,7 @@ export default function CompetitionPage({ params }: { params: Promise<{ id: stri
         <TabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
         <div className="mt-6">
-          {activeTab === "schedule" && <ScheduleTab events={competition.events} competitionId={id} />}
+          {activeTab === "schedule" && <ScheduleTab events={competition.events} competitionId={id} competition={competition} />}
           {activeTab === "athletes" && (
             <AthletesTab
               ageCategory={competition.ageCategory}
@@ -1386,63 +1387,162 @@ function AthletesTab({
 
 // ─── Schedule Tab ────────────────────────────────────────────────────────────
 
-function ScheduleTab({ events, competitionId }: { events: Event[]; competitionId: string }) {
-  const grouped = events.reduce(
-    (acc, event) => {
-      const day = event.dayLabel || "Unscheduled";
-      if (!acc[day]) acc[day] = [];
-      acc[day].push(event);
-      return acc;
-    },
-    {} as Record<string, Event[]>
-  );
+function ScheduleTab({
+  events,
+  competitionId,
+  competition,
+}: {
+  events: Event[];
+  competitionId: string;
+  competition: Competition;
+}) {
+  // Build array of competition days
+  const startDate = new Date(competition.date + "T00:00:00");
+  const endDate = new Date((competition.endDate || competition.date) + "T00:00:00");
+  const days: Date[] = [];
+  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    days.push(new Date(d));
+  }
 
-  function formatTime(iso: string | null) {
-    if (!iso) return "TBD";
+  // Time grid: 7:00 AM to 9:00 PM in 30-min slots
+  const START_HOUR = 7;
+  const END_HOUR = 21; // 9 PM
+  const SLOT_HEIGHT = 48; // px per 30-min slot
+  const TOTAL_SLOTS = (END_HOUR - START_HOUR) * 2;
+
+  const timeSlots: { hour: number; minute: number; label: string }[] = [];
+  for (let h = START_HOUR; h < END_HOUR; h++) {
+    for (const m of [0, 30]) {
+      const hour12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
+      const ampm = h >= 12 ? "PM" : "AM";
+      const label = m === 0 ? `${hour12}:00 ${ampm}` : "";
+      timeSlots.push({ hour: h, minute: m, label });
+    }
+  }
+
+  function formatDayHeader(date: Date) {
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return `${dayNames[date.getDay()]}, ${monthNames[date.getMonth()]} ${date.getDate()}`;
+  }
+
+  function formatEventTime(iso: string) {
     const d = new Date(iso);
     return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
   }
 
+  function isSameDay(a: Date, b: Date) {
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
+
+  // Calculate top offset for an event within the grid
+  function getEventTop(iso: string): number {
+    const d = new Date(iso);
+    const hours = d.getHours();
+    const minutes = d.getMinutes();
+    const totalMinutesFromStart = (hours - START_HOUR) * 60 + minutes;
+    return (totalMinutesFromStart / 30) * SLOT_HEIGHT;
+  }
+
+  // Group events by day column index
+  const eventsByDay: Record<number, Event[]> = {};
+  for (const event of events) {
+    if (!event.scheduledStart) continue;
+    const eventDate = new Date(event.scheduledStart);
+    const dayIdx = days.findIndex((d) => isSameDay(d, eventDate));
+    if (dayIdx === -1) continue;
+    if (!eventsByDay[dayIdx]) eventsByDay[dayIdx] = [];
+    eventsByDay[dayIdx].push(event);
+  }
+
+  const disciplineNames: Record<string, string> = {
+    fencing_ranking: "Fencing Ranking",
+    fencing_de: "Fencing DE",
+    obstacle: "Obstacle",
+    swimming: "Swimming",
+    laser_run: "Laser Run",
+    riding: "Riding",
+  };
+
+  const EVENT_BLOCK_HEIGHT = 2 * SLOT_HEIGHT; // 1 hour = 2 slots
+
   return (
-    <div className="space-y-8">
-      {Object.entries(grouped).map(([day, dayEvents]) => (
-        <div key={day}>
-          <h3 className="text-xs font-medium text-[#9B9A97] tracking-[0.02em] uppercase mb-3">
-            {day}
-          </h3>
-          <div className="divide-y divide-[#E9E9E7]">
-            <div className="hidden md:grid grid-cols-[80px_1fr_1fr] gap-4 pb-2 text-xs font-medium text-[#9B9A97] tracking-[0.02em] uppercase">
-              <span>Start</span>
-              <span>Event</span>
-              <span>Status</span>
+    <div className="overflow-x-auto">
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: `60px repeat(${days.length}, 1fr)`,
+          minWidth: days.length > 3 ? `${60 + days.length * 180}px` : undefined,
+        }}
+      >
+        {/* Header row */}
+        <div
+          className="border-b-2 border-[#E9E9E7] bg-white"
+          style={{ position: "sticky", top: 0, zIndex: 10 }}
+        />
+        {days.map((day, i) => (
+          <div
+            key={i}
+            className="text-center text-sm font-medium text-[#37352F] py-3 border-b-2 border-[#E9E9E7] border-l border-l-[#E9E9E7] bg-white"
+            style={{ position: "sticky", top: 0, zIndex: 10 }}
+          >
+            {formatDayHeader(day)}
+          </div>
+        ))}
+
+        {/* Time grid rows */}
+        {timeSlots.map((slot, slotIdx) => (
+          <Fragment key={slotIdx}>
+            {/* Time label cell */}
+            <div
+              className="text-right pr-2 border-b border-[#E9E9E7]"
+              style={{ height: SLOT_HEIGHT }}
+            >
+              {slot.label && (
+                <span className="text-xs font-mono text-[#9B9A97] leading-none" style={{ position: "relative", top: -6 }}>
+                  {slot.label}
+                </span>
+              )}
             </div>
-            {dayEvents.map((event) => (
-              <div key={event.id} className="flex flex-col gap-1 py-3 md:grid md:grid-cols-[80px_1fr_1fr] md:gap-4 md:items-center">
-                <div className="flex items-center gap-2 md:block">
-                  <span className="text-sm font-mono text-[#787774]">
-                    {formatTime(event.scheduledStart)}
-                  </span>
-                  <StatusBadge status={event.status} />
-                </div>
-                <Link
-                  href={`/competitions/${competitionId}/events/${event.id}`}
-                  className="text-sm text-[#0B6E99] hover:underline"
-                >
-                  {DISCIPLINE_NAMES[event.discipline] || event.discipline}
-                </Link>
-                <div className="hidden md:flex items-center gap-2">
-                  <StatusBadge status={event.status} />
-                  {event.completedAt && (
-                    <span className="text-xs text-[#9B9A97]">
-                      at {formatTime(event.completedAt)}
-                    </span>
-                  )}
-                </div>
+
+            {/* Day columns */}
+            {days.map((_, dayIdx) => (
+              <div
+                key={dayIdx}
+                className="border-b border-[#E9E9E7] border-l border-l-[#E9E9E7]"
+                style={{ height: SLOT_HEIGHT, position: "relative" }}
+              >
+                {/* Render events only from the first slot to avoid duplicates */}
+                {slotIdx === 0 &&
+                  (eventsByDay[dayIdx] || []).map((event) => {
+                    const top = getEventTop(event.scheduledStart);
+                    const color = disciplineColors[event.discipline] || "#787774";
+                    const name = disciplineNames[event.discipline] || event.discipline;
+                    return (
+                      <Link
+                        key={event.id}
+                        href={`/competitions/${competitionId}/events/${event.id}`}
+                        className="block rounded-[4px] text-white text-xs px-2 py-1.5 overflow-hidden hover:opacity-90 transition-opacity"
+                        style={{
+                          position: "absolute",
+                          top,
+                          left: 2,
+                          right: 2,
+                          height: EVENT_BLOCK_HEIGHT,
+                          backgroundColor: color,
+                          zIndex: 5,
+                        }}
+                      >
+                        <div className="font-medium truncate">{name}</div>
+                        <div className="opacity-80 mt-0.5">{formatEventTime(event.scheduledStart)}</div>
+                      </Link>
+                    );
+                  })}
               </div>
             ))}
-          </div>
-        </div>
-      ))}
+          </Fragment>
+        ))}
+      </div>
     </div>
   );
 }
@@ -1724,12 +1824,54 @@ function LeaderboardTab({ competitionId, ageCategory }: { competitionId: string;
 
 // ─── Live Feed Tab ───────────────────────────────────────────────────────────
 
+function getFavouritesFromCookies(): string[] {
+  if (typeof document === "undefined") return [];
+  const match = document.cookie.match(/(?:^|;\s*)favAthletes=([^;]*)/);
+  if (!match) return [];
+  try {
+    return JSON.parse(decodeURIComponent(match[1]));
+  } catch {
+    return [];
+  }
+}
+
+function setFavouritesToCookies(ids: string[]) {
+  const encoded = encodeURIComponent(JSON.stringify(ids));
+  const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
+  document.cookie = `favAthletes=${encoded}; expires=${expires}; path=/; SameSite=Lax`;
+}
+
 function LiveFeedTab({ competitionId }: { competitionId: string }) {
   const { data: feed } = useSWR<FeedEntry[]>(
     `/api/competitions/${competitionId}/live-feed`,
     fetcher,
     { refreshInterval: 3000 }
   );
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [favourites, setFavourites] = useState<string[]>([]);
+  const [showOnlyFavourites, setShowOnlyFavourites] = useState(false);
+
+  useEffect(() => {
+    setFavourites(getFavouritesFromCookies());
+  }, []);
+
+  function toggleFavourite(athleteId: string) {
+    setFavourites((prev) => {
+      const isFav = prev.includes(athleteId);
+      const updated = isFav ? prev.filter((id) => id !== athleteId) : [...prev, athleteId];
+      setFavouritesToCookies(updated);
+      // Auto-enable toggle when first favourite is added
+      if (!isFav && prev.length === 0) {
+        setShowOnlyFavourites(true);
+      }
+      // Auto-disable toggle when last favourite is removed
+      if (isFav && updated.length === 0) {
+        setShowOnlyFavourites(false);
+      }
+      return updated;
+    });
+  }
 
   if (!feed) {
     return (
@@ -1746,64 +1888,135 @@ function LiveFeedTab({ competitionId }: { competitionId: string }) {
     return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
   }
 
+  const filteredFeed = feed.filter((entry) => {
+    const matchesSearch =
+      searchQuery.trim() === "" ||
+      entry.athleteName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFavourites =
+      !showOnlyFavourites || favourites.includes(entry.athleteId);
+    return matchesSearch && matchesFavourites;
+  });
+
   return (
     <div>
+      {/* Search bar */}
+      <div className="mb-4">
+        <div className="relative">
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9B9A97]"
+          />
+          <input
+            type="text"
+            placeholder="Search by athlete name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 text-sm text-[#37352F] placeholder-[#9B9A97] border border-[#E9E9E7] rounded-[4px] bg-white focus:outline-none focus:border-[#0B6E99] transition-colors"
+          />
+        </div>
+      </div>
+
       <div className="flex items-center justify-between mb-4">
         <span className="text-xs text-[#9B9A97]">Auto-refreshing every 3s</span>
+        {favourites.length > 0 && (
+          <button
+            onClick={() => setShowOnlyFavourites((v) => !v)}
+            className="flex items-center gap-2 text-xs text-[#37352F]"
+          >
+            <span>Favourites only</span>
+            <div
+              className="relative w-8 h-[18px] rounded-full transition-colors duration-200 cursor-pointer"
+              style={{ backgroundColor: showOnlyFavourites ? "#0B6E99" : "#D5D5D2" }}
+            >
+              <div
+                className="absolute top-[2px] w-[14px] h-[14px] rounded-full bg-white shadow transition-transform duration-200"
+                style={{ transform: showOnlyFavourites ? "translateX(16px)" : "translateX(2px)" }}
+              />
+            </div>
+          </button>
+        )}
       </div>
       <div className="divide-y divide-[#E9E9E7]">
-        {feed.map((entry) => (
-          <div
-            key={entry.id}
-            className="py-3 hover:bg-[#EFEFEF] px-3 -mx-3 rounded-[3px] transition-colors duration-150"
-          >
-            {/* Desktop layout */}
-            <div className="hidden md:flex items-center gap-4">
-              <span className="text-xs text-[#9B9A97] font-mono w-16 flex-shrink-0">
-                {formatTimestamp(entry.timestamp)}
-              </span>
-              <span
-                className="w-2 h-2 rounded-full flex-shrink-0"
-                style={{ backgroundColor: disciplineColors[entry.discipline] || "#9B9A97" }}
-              />
-              <span className="text-xs text-[#787774] w-24 flex-shrink-0">
-                {DISCIPLINE_NAMES[entry.discipline] || entry.discipline}
-              </span>
-              <span className="text-sm text-[#37352F] font-medium flex-1">
-                {entry.athleteName}
-                <span className="text-[#9B9A97] text-xs ml-1">{entry.country}</span>
-              </span>
-              <span className="text-sm text-[#787774] font-mono">{entry.rawInput}</span>
-              <span className="text-[#787774] text-xs">→</span>
-              <span className="text-sm text-[#37352F] font-semibold font-mono w-16 text-right">
-                {Math.round(entry.mpPoints)} pts
-              </span>
-            </div>
-            {/* Mobile layout */}
-            <div className="md:hidden">
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-2">
-                  <span
-                    className="w-2 h-2 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: disciplineColors[entry.discipline] || "#9B9A97" }}
-                  />
-                  <span className="text-sm font-medium text-[#37352F]">{entry.athleteName}</span>
-                  <span className="text-[10px] text-[#9B9A97]">{entry.country}</span>
-                </div>
-                <span className="text-sm font-bold font-mono text-[#37352F]">
+        {filteredFeed.map((entry) => {
+          const isFav = favourites.includes(entry.athleteId);
+          return (
+            <div
+              key={entry.id}
+              className="py-3 hover:bg-[#EFEFEF] px-3 -mx-3 rounded-[3px] transition-colors duration-150"
+            >
+              {/* Desktop layout */}
+              <div className="hidden md:flex items-center gap-4">
+                <span className="text-xs text-[#9B9A97] font-mono w-16 flex-shrink-0">
+                  {formatTimestamp(entry.timestamp)}
+                </span>
+                <span
+                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: disciplineColors[entry.discipline] || "#9B9A97" }}
+                />
+                <span className="text-xs text-[#787774] w-24 flex-shrink-0">
+                  {DISCIPLINE_NAMES[entry.discipline] || entry.discipline}
+                </span>
+                <span className="text-sm text-[#37352F] font-medium flex-1 flex items-center gap-1.5">
+                  <button
+                    onClick={() => toggleFavourite(entry.athleteId)}
+                    className="flex-shrink-0 transition-colors"
+                  >
+                    <Star
+                      size={14}
+                      fill={isFav ? "#DFAB01" : "none"}
+                      stroke={isFav ? "#DFAB01" : "#C4C4C0"}
+                    />
+                  </button>
+                  {entry.athleteName}
+                  <span className="text-[#9B9A97] text-xs ml-1">{entry.country}</span>
+                </span>
+                <span className="text-sm text-[#787774] font-mono">{entry.rawInput}</span>
+                <span className="text-[#787774] text-xs">{"\u2192"}</span>
+                <span className="text-sm text-[#37352F] font-semibold font-mono w-16 text-right">
                   {Math.round(entry.mpPoints)} pts
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-[#787774]">
-                <span className="font-mono">{formatTimestamp(entry.timestamp)}</span>
-                <span>·</span>
-                <span>{DISCIPLINE_NAMES[entry.discipline] || entry.discipline}</span>
-                <span>·</span>
-                <span className="font-mono">{entry.rawInput}</span>
+              {/* Mobile layout */}
+              <div className="md:hidden">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-2 h-2 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: disciplineColors[entry.discipline] || "#9B9A97" }}
+                    />
+                    <button
+                      onClick={() => toggleFavourite(entry.athleteId)}
+                      className="flex-shrink-0 transition-colors"
+                    >
+                      <Star
+                        size={14}
+                        fill={isFav ? "#DFAB01" : "none"}
+                        stroke={isFav ? "#DFAB01" : "#C4C4C0"}
+                      />
+                    </button>
+                    <span className="text-sm font-medium text-[#37352F]">{entry.athleteName}</span>
+                    <span className="text-[10px] text-[#9B9A97]">{entry.country}</span>
+                  </div>
+                  <span className="text-sm font-bold font-mono text-[#37352F]">
+                    {Math.round(entry.mpPoints)} pts
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-[11px] text-[#787774]">
+                  <span className="font-mono">{formatTimestamp(entry.timestamp)}</span>
+                  <span>{"\u00B7"}</span>
+                  <span>{DISCIPLINE_NAMES[entry.discipline] || entry.discipline}</span>
+                  <span>{"\u00B7"}</span>
+                  <span className="font-mono">{entry.rawInput}</span>
+                </div>
               </div>
             </div>
+          );
+        })}
+        {filteredFeed.length === 0 && feed.length > 0 && (
+          <div className="text-center py-8 text-[#9B9A97] text-sm">
+            No matching entries found
           </div>
-        ))}
+        )}
         {feed.length === 0 && (
           <div className="text-center py-8 text-[#9B9A97] text-sm">
             No scores recorded yet

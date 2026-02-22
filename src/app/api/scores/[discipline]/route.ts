@@ -63,8 +63,8 @@ export async function POST(
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  // Validate eventId format
-  if (typeof eventId !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventId)) {
+  // Validate eventId format (cuid or uuid)
+  if (typeof eventId !== "string" || eventId.length < 10 || eventId.length > 50) {
     return NextResponse.json({ error: "Invalid eventId format" }, { status: 400 });
   }
 
@@ -88,7 +88,7 @@ export async function POST(
   } catch (error) {
     if (error instanceof z.ZodError) {
       const validationErrors: Record<string, string> = {};
-      error.errors.forEach((err) => {
+      error.issues.forEach((err) => {
         const path = err.path.join(".");
         validationErrors[path] = err.message;
       });

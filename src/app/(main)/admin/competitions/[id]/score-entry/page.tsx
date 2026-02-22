@@ -12,11 +12,12 @@ import {
 } from "@/lib/scoring/fencing-ranking";
 import { calculateFencingDE } from "@/lib/scoring/fencing-de";
 import { calculateObstacle } from "@/lib/scoring/obstacle";
-import { calculateSwimming } from "@/lib/scoring/swimming";
+import { calculateSwimming, parseSwimmingTime } from "@/lib/scoring/swimming";
 import { calculateLaserRun } from "@/lib/scoring/laser-run";
 import { calculateRiding } from "@/lib/scoring/riding";
 import type { AgeCategory } from "@/lib/scoring/types";
-import { Check, Loader2, Cloud, CloudOff, Save, Printer, ListOrdered, Waves, Radio, Clock, CheckCircle2, Users } from "lucide-react";
+import { Check, Loader2, Cloud, CloudOff, Save, Printer, ListOrdered, Waves, Radio, Clock, CheckCircle2, Users, GripVertical, ChevronDown, ChevronUp } from "lucide-react";
+import { Reorder } from "framer-motion";
 import { CompetitionStatusControl } from "@/components/CompetitionStatusControl";
 import { FencingDEBracketView } from "@/components/FencingDEBracket";
 
@@ -478,11 +479,7 @@ function useGridNav(rows: number, cols: number) {
 // ─── Shared parsing helpers ──────────────────────────────────────────────────
 
 function parseSwimmingHundredths(input: string): number {
-  const mmss = input.match(/^(\d{1,2}):(\d{2})\.(\d{2})$/);
-  if (mmss) return parseInt(mmss[1], 10) * 6000 + parseInt(mmss[2], 10) * 100 + parseInt(mmss[3], 10);
-  const sec = input.match(/^(\d+)\.(\d{2})$/);
-  if (sec) return parseInt(sec[1], 10) * 100 + parseInt(sec[2], 10);
-  return Math.round(parseFloat(input) * 100) || 0;
+  return parseSwimmingTime(input);
 }
 
 function parseLaserRunSeconds(input: string): number {
@@ -2049,6 +2046,7 @@ interface SeedingAssignment {
 
 interface SeedingHeat {
   heatNumber: number;
+  gender?: string;
   assignments: SeedingAssignment[];
 }
 
@@ -2067,6 +2065,8 @@ function SwimSeedingPanel({ competitionId, ageCategory }: { competitionId: strin
   const [saving, setSaving] = useState(false);
   const [localHeats, setLocalHeats] = useState<SeedingHeat[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [manualSeedTimes, setManualSeedTimes] = useState<Record<string, string>>({});
+  const [showManualSeeds, setShowManualSeeds] = useState(false);
 
   // Sync local heats from server data
   useEffect(() => {
@@ -2075,14 +2075,40 @@ function SwimSeedingPanel({ competitionId, ageCategory }: { competitionId: strin
     }
   }, [data, localHeats]);
 
+  // Collect all athletes from heats for the manual seed time card
+  const allAthletes = useCallback(() => {
+    const heats = localHeats || data?.seeding?.heats;
+    if (!heats) return [];
+    const athletes: SeedingAssignment[] = [];
+    for (const heat of heats) {
+      for (const a of heat.assignments) {
+        if (!athletes.find(x => x.athleteId === a.athleteId)) {
+          athletes.push(a);
+        }
+      }
+    }
+    return athletes.sort((a, b) => `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`));
+  }, [localHeats, data]);
+
   const handleGenerate = useCallback(async () => {
     setGenerating(true);
     setError(null);
     try {
+      // Convert manual seed time strings to hundredths
+      const manualHundredths: Record<string, number> = {};
+      for (const [athleteId, timeStr] of Object.entries(manualSeedTimes)) {
+        if (timeStr.trim()) {
+          const h = parseSwimmingTime(timeStr);
+          if (h > 0) manualHundredths[athleteId] = h;
+        }
+      }
+
       const res = await fetch(`/api/competitions/${competitionId}/swim-seeding`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({
+          manualSeedTimes: Object.keys(manualHundredths).length > 0 ? manualHundredths : undefined,
+        }),
       });
       if (!res.ok) {
         const d = await res.json();
@@ -2096,7 +2122,7 @@ function SwimSeedingPanel({ competitionId, ageCategory }: { competitionId: strin
     } finally {
       setGenerating(false);
     }
-  }, [competitionId, mutate]);
+  }, [competitionId, mutate, manualSeedTimes]);
 
   const handleSave = useCallback(async () => {
     if (!localHeats) return;
@@ -2121,7 +2147,6 @@ function SwimSeedingPanel({ competitionId, ageCategory }: { competitionId: strin
     setSaving(true);
     setError(null);
     try {
-      // Save heats + publish state together
       const body: Record<string, unknown> = { published: publish };
       if (localHeats) body.heats = localHeats;
       const res = await fetch(`/api/competitions/${competitionId}/swim-seeding`, {
@@ -2159,7 +2184,7 @@ function SwimSeedingPanel({ competitionId, ageCategory }: { competitionId: strin
 
       return `
         <div class="heat-block">
-          <div class="heat-header">Heat ${heat.heatNumber}${heat.heatNumber === heats.length ? " (Fastest)" : heat.heatNumber === 1 && heats.length > 1 ? " (Slowest)" : ""}</div>
+          <div class="heat-header">Heat ${heat.heatNumber}${heat.gender ? ` — ${heat.gender === "F" ? "Women" : "Men"}` : ""}${heat.heatNumber === heats.length ? " (Fastest)" : heat.heatNumber === 1 && heats.length > 1 ? " (Slowest)" : ""}</div>
           <table>
             <thead>
               <tr>
@@ -2217,21 +2242,16 @@ function SwimSeedingPanel({ competitionId, ageCategory }: { competitionId: strin
     win.document.close();
   }, [localHeats, data, ageCategory]);
 
-  // Move swimmer between lanes within a heat
-  const moveLane = useCallback((heatIdx: number, assignmentIdx: number, direction: "up" | "down") => {
+  // Handle drag reorder within a heat
+  const handleReorder = useCallback((heatIdx: number, newAssignments: SeedingAssignment[]) => {
     if (!localHeats) return;
     const newHeats = JSON.parse(JSON.stringify(localHeats)) as SeedingHeat[];
-    const heat = newHeats[heatIdx];
-    const swapIdx = direction === "up" ? assignmentIdx - 1 : assignmentIdx + 1;
-    if (swapIdx < 0 || swapIdx >= heat.assignments.length) return;
-
-    // Swap lane numbers
-    const tempLane = heat.assignments[assignmentIdx].lane;
-    heat.assignments[assignmentIdx].lane = heat.assignments[swapIdx].lane;
-    heat.assignments[swapIdx].lane = tempLane;
-
-    // Re-sort by lane
-    heat.assignments.sort((a: SeedingAssignment, b: SeedingAssignment) => a.lane - b.lane);
+    // Reassign lane numbers based on new drag order
+    const laneNumbers = newHeats[heatIdx].assignments.map(a => a.lane).sort((a, b) => a - b);
+    newHeats[heatIdx].assignments = newAssignments.map((a, i) => ({
+      ...a,
+      lane: laneNumbers[i],
+    }));
     setLocalHeats(newHeats);
   }, [localHeats]);
 
@@ -2323,59 +2343,115 @@ function SwimSeedingPanel({ competitionId, ageCategory }: { competitionId: strin
         </div>
       )}
 
+      {/* Manual Seed Times Card */}
+      <div className="mb-3 bg-white border border-[#D5D5D2] rounded-sm overflow-hidden">
+        <button
+          onClick={() => setShowManualSeeds(!showManualSeeds)}
+          className="w-full flex items-center justify-between px-3 py-2 bg-[#F7F6F3] border-b border-[#E9E9E7] hover:bg-[#EFEFEF] transition-colors"
+        >
+          <span className="text-xs font-semibold text-[#37352F]">Manual Seed Times</span>
+          {showManualSeeds ? <ChevronUp size={14} className="text-[#787774]" /> : <ChevronDown size={14} className="text-[#787774]" />}
+        </button>
+        {showManualSeeds && (
+          <div className="p-3">
+            <p className="text-[11px] text-[#9B9A97] mb-2">
+              Override seed times before regenerating. Format: M:SS.hh, M:SS, or seconds. Leave blank to use database times.
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-xs">
+                <thead>
+                  <tr>
+                    <th className={`${cellHeader} text-left`}>Athlete</th>
+                    <th className={`${cellHeader} text-left w-[60px]`}>Country</th>
+                    <th className={`${cellHeader} text-center w-[50px]`}>Gender</th>
+                    <th className={`${cellHeader} text-center w-[100px]`}>Current Seed</th>
+                    <th className={`${cellHeader} text-center w-[120px]`}>Manual Override</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allAthletes().map((a) => (
+                    <tr key={a.athleteId}>
+                      <td className={`${cellReadonly} text-[12px]`}>{a.firstName} {a.lastName}</td>
+                      <td className={`${cellReadonly} text-[#787774]`}>{a.country}</td>
+                      <td className={`${cellReadonly} text-center text-[#787774]`}>{a.gender}</td>
+                      <td className={`${cellBase} text-center font-mono ${a.seedTime === "NT" ? "text-[#9B9A97]" : "text-[#0B6E99]"}`}>
+                        {a.seedTime}
+                      </td>
+                      <td className={cellBase}>
+                        <input
+                          type="text"
+                          value={manualSeedTimes[a.athleteId] || ""}
+                          onChange={(e) => setManualSeedTimes(prev => ({ ...prev, [a.athleteId]: e.target.value }))}
+                          placeholder="e.g. 1:15.30"
+                          className="w-full px-2 py-1 text-xs text-center font-mono border border-[#E9E9E7] rounded-[3px] bg-white text-[#37352F] outline-none focus:border-[#0B6E99] transition-colors"
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-[10px] text-[#9B9A97] mt-2">
+              Click &quot;Regenerate&quot; above to apply manual seed times.
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* Heats */}
       <div className="space-y-3">
         {heats.map((heat, heatIdx) => (
           <div key={heat.heatNumber} className="bg-white border border-[#D5D5D2] rounded-sm overflow-hidden">
-            <div className="px-3 py-2 bg-[#E8F4F8] border-b border-[#B8DCE9]">
+            <div className="px-3 py-2 bg-[#E8F4F8] border-b border-[#B8DCE9] flex items-center gap-2">
               <span className="text-xs font-semibold text-[#0B6E99]">
                 Heat {heat.heatNumber}
                 {heat.heatNumber === heats.length && heats.length > 1 ? " (Fastest)" : ""}
                 {heat.heatNumber === 1 && heats.length > 1 ? " (Slowest)" : ""}
               </span>
+              {heat.gender && (
+                <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded-sm ${
+                  heat.gender === "F"
+                    ? "text-[#AD1A72] bg-[#F8E8F0] border border-[#E8B8D0]"
+                    : "text-[#0B6E99] bg-[#E8F4F8] border border-[#B8DCE9]"
+                }`}>
+                  {heat.gender === "F" ? "Women" : "Men"}
+                </span>
+              )}
             </div>
-            <table className="w-full border-collapse">
-              <thead>
-                <tr>
-                  <th className={`${cellHeader} text-center w-16`}>Lane</th>
-                  <th className={`${cellHeader} text-left`}>Athlete</th>
-                  <th className={`${cellHeader} text-left w-[80px]`}>Country</th>
-                  <th className={`${cellHeader} text-center w-[100px]`}>Seed Time</th>
-                  <th className={`${cellHeader} text-center w-[80px]`}>Move</th>
-                </tr>
-              </thead>
-              <tbody>
-                {heat.assignments.map((a, aIdx) => (
-                  <tr key={a.athleteId}>
-                    <td className={`${cellBase} text-center font-bold`}>{a.lane}</td>
-                    <td className={cellReadonly}>{a.firstName} {a.lastName}</td>
-                    <td className={`${cellReadonly} text-[#787774]`}>{a.country}</td>
-                    <td className={`${cellBase} text-center font-mono ${a.seedTime === "NT" ? "text-[#9B9A97]" : "text-[#0B6E99] font-semibold"}`}>
-                      {a.seedTime}
-                    </td>
-                    <td className={`${cellBase} text-center`}>
-                      <div className="flex items-center justify-center gap-1">
-                        <button
-                          onClick={() => moveLane(heatIdx, aIdx, "up")}
-                          disabled={aIdx === 0}
-                          className="p-0.5 text-[#787774] hover:text-[#37352F] disabled:opacity-20 disabled:cursor-default"
-                        >
-                          <Check size={12} className="rotate-180" />
-                          ▲
-                        </button>
-                        <button
-                          onClick={() => moveLane(heatIdx, aIdx, "down")}
-                          disabled={aIdx === heat.assignments.length - 1}
-                          className="p-0.5 text-[#787774] hover:text-[#37352F] disabled:opacity-20 disabled:cursor-default"
-                        >
-                          ▼
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {/* Header row */}
+            <div className="flex items-center border-b border-[#E9E9E7] bg-[#F0F0ED]">
+              <div className="w-8 flex-shrink-0" />
+              <div className="w-14 flex-shrink-0 px-2 py-1.5 text-[10px] font-semibold text-[#5A5A57] uppercase tracking-wider text-center">Lane</div>
+              <div className="flex-1 px-2 py-1.5 text-[10px] font-semibold text-[#5A5A57] uppercase tracking-wider">Athlete</div>
+              <div className="w-[70px] flex-shrink-0 px-2 py-1.5 text-[10px] font-semibold text-[#5A5A57] uppercase tracking-wider">Country</div>
+              <div className="w-[100px] flex-shrink-0 px-2 py-1.5 text-[10px] font-semibold text-[#5A5A57] uppercase tracking-wider text-center">Seed Time</div>
+            </div>
+            {/* Draggable rows */}
+            <Reorder.Group
+              axis="y"
+              values={heat.assignments}
+              onReorder={(newOrder) => handleReorder(heatIdx, newOrder)}
+              className="list-none p-0 m-0"
+            >
+              {heat.assignments.map((a) => (
+                <Reorder.Item
+                  key={a.athleteId}
+                  value={a}
+                  style={{ touchAction: "none" }}
+                  className="flex items-center border-b border-[#E9E9E7] bg-white hover:bg-[#FAFAF8] cursor-grab active:cursor-grabbing active:bg-[#F0F7FA] active:shadow-sm transition-colors"
+                >
+                  <div className="w-8 flex-shrink-0 flex items-center justify-center text-[#C4C4C0] hover:text-[#787774]">
+                    <GripVertical size={14} />
+                  </div>
+                  <div className="w-14 flex-shrink-0 px-2 py-2 text-center font-bold text-xs">{a.lane}</div>
+                  <div className="flex-1 px-2 py-2 text-xs font-medium text-[#37352F]">{a.firstName} {a.lastName}</div>
+                  <div className="w-[70px] flex-shrink-0 px-2 py-2 text-xs text-[#787774]">{a.country}</div>
+                  <div className={`w-[100px] flex-shrink-0 px-2 py-2 text-xs text-center font-mono ${a.seedTime === "NT" ? "text-[#9B9A97]" : "text-[#0B6E99] font-semibold"}`}>
+                    {a.seedTime}
+                  </div>
+                </Reorder.Item>
+              ))}
+            </Reorder.Group>
           </div>
         ))}
       </div>

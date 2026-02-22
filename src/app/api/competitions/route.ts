@@ -41,7 +41,8 @@ export async function POST(req: NextRequest) {
       return validation.response;
     }
 
-    const data = validation.data;
+    const { endDate, ...rest } = validation.data;
+    const data = { ...rest, endDate: endDate || rest.date };
     const competition = await prisma.competition.create({ data });
     return NextResponse.json(competition, { status: 201 });
   } catch {

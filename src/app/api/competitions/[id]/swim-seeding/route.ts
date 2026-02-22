@@ -24,6 +24,7 @@ interface SeedingAssignment {
 
 interface SeedingHeat {
   heatNumber: number;
+  gender: string;
   assignments: SeedingAssignment[];
 }
 
@@ -32,9 +33,75 @@ interface SeedingConfig {
   heats: SeedingHeat[];
 }
 
+interface SwimmerData {
+  athleteId: string;
+  firstName: string;
+  lastName: string;
+  country: string;
+  ageCategory: string;
+  gender: string;
+  bestTime: number;
+  avgTime: number;
+}
+
 // Lane assignment order: fastest swimmer → lane 4, then 5, 3, 6, 2, 7, 1, 8
 const LANES = 8;
 const LANE_ORDER = [4, 5, 3, 6, 2, 7, 1, 8];
+
+function generateHeatsForGroup(
+  swimmers: SwimmerData[],
+  startHeatNumber: number,
+  gender: string
+): SeedingHeat[] {
+  if (swimmers.length === 0) return [];
+
+  // Sort: athletes with times first (by best time, tiebreak by avg time), then NT
+  const sorted = [...swimmers].sort((a, b) => {
+    if (a.bestTime === 0 && b.bestTime === 0) return 0;
+    if (a.bestTime === 0) return 1;
+    if (b.bestTime === 0) return -1;
+    if (a.bestTime !== b.bestTime) return a.bestTime - b.bestTime;
+    return a.avgTime - b.avgTime;
+  });
+
+  // NT swimmers first (early/slow heats), timed slowest→fastest
+  const withTime = sorted.filter((s) => s.bestTime > 0);
+  const noTime = sorted.filter((s) => s.bestTime === 0);
+  const orderedForHeats = [...noTime, ...withTime.slice().reverse()];
+
+  const totalHeats = Math.ceil(orderedForHeats.length / LANES);
+  const heatGroups: SwimmerData[][] = [];
+  for (let i = 0; i < totalHeats; i++) {
+    heatGroups.push(orderedForHeats.slice(i * LANES, (i + 1) * LANES));
+  }
+
+  return heatGroups.map((group, idx) => {
+    // Within each heat, sort by seed time (fastest first for lane assignment)
+    const heatSorted = [...group].sort((a, b) => {
+      if (a.bestTime === 0 && b.bestTime === 0) return 0;
+      if (a.bestTime === 0) return 1;
+      if (b.bestTime === 0) return -1;
+      return a.bestTime - b.bestTime;
+    });
+
+    const assignments: SeedingAssignment[] = heatSorted.map((s, i) => ({
+      lane: LANE_ORDER[i],
+      athleteId: s.athleteId,
+      firstName: s.firstName,
+      lastName: s.lastName,
+      country: s.country,
+      ageCategory: s.ageCategory,
+      gender: s.gender,
+      seedTime: formatHundredths(s.bestTime),
+      seedHundredths: s.bestTime,
+    }));
+
+    // Sort by lane for display
+    assignments.sort((a, b) => a.lane - b.lane);
+
+    return { heatNumber: startHeatNumber + idx, gender, assignments };
+  });
+}
 
 function formatHundredths(h: number): string {
   if (h <= 0) return "NT";
@@ -87,6 +154,17 @@ export async function POST(
 
   const { id: competitionId } = await params;
 
+  // Accept optional manual seed times from the request body
+  let manualSeedTimes: Record<string, number> = {};
+  try {
+    const body = await req.json();
+    if (body.manualSeedTimes && typeof body.manualSeedTimes === "object") {
+      manualSeedTimes = body.manualSeedTimes as Record<string, number>;
+    }
+  } catch {
+    // No body or invalid JSON – proceed with database times only
+  }
+
   const swimEvent = await prisma.event.findFirst({
     where: { competitionId, discipline: "swimming" },
   });
@@ -123,9 +201,11 @@ export async function POST(
   }
 
   // Build seeded swimmer list
-  const swimmers = competitionAthletes.map((ca) => {
+  const swimmers: SwimmerData[] = competitionAthletes.map((ca) => {
+    // Use manual seed time if provided, otherwise fall back to database best time
+    const manualTime = manualSeedTimes[ca.athleteId];
     const times = scoresByAthlete.get(ca.athleteId) || [];
-    const bestTime = times.length > 0 ? Math.min(...times) : 0;
+    const bestTime = manualTime != null ? manualTime : (times.length > 0 ? Math.min(...times) : 0);
     const avgTime = times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 0;
 
     return {
@@ -140,53 +220,14 @@ export async function POST(
     };
   });
 
-  // Sort: athletes with times first (by best time, tiebreak by avg time), then NT
-  swimmers.sort((a, b) => {
-    if (a.bestTime === 0 && b.bestTime === 0) return 0;
-    if (a.bestTime === 0) return 1;
-    if (b.bestTime === 0) return -1;
-    if (a.bestTime !== b.bestTime) return a.bestTime - b.bestTime;
-    return a.avgTime - b.avgTime; // tiebreaker: lower average = better seed
-  });
+  // Split by gender
+  const maleSwimmers = swimmers.filter(s => s.gender === "M");
+  const femaleSwimmers = swimmers.filter(s => s.gender === "F");
 
-  // Split into heats
-  // NT swimmers first (early/slow heats), timed slowest→fastest
-  const withTime = swimmers.filter((s) => s.bestTime > 0);
-  const noTime = swimmers.filter((s) => s.bestTime === 0);
-  const orderedForHeats = [...noTime, ...withTime.slice().reverse()];
-
-  const totalHeats = Math.ceil(orderedForHeats.length / LANES);
-  const heatGroups: typeof orderedForHeats[] = [];
-  for (let i = 0; i < totalHeats; i++) {
-    heatGroups.push(orderedForHeats.slice(i * LANES, (i + 1) * LANES));
-  }
-
-  const heats: SeedingHeat[] = heatGroups.map((group, idx) => {
-    // Within each heat, sort by seed time (fastest first for lane assignment)
-    const sorted = [...group].sort((a, b) => {
-      if (a.bestTime === 0 && b.bestTime === 0) return 0;
-      if (a.bestTime === 0) return 1;
-      if (b.bestTime === 0) return -1;
-      return a.bestTime - b.bestTime;
-    });
-
-    const assignments: SeedingAssignment[] = sorted.map((s, i) => ({
-      lane: LANE_ORDER[i],
-      athleteId: s.athleteId,
-      firstName: s.firstName,
-      lastName: s.lastName,
-      country: s.country,
-      ageCategory: s.ageCategory,
-      gender: s.gender,
-      seedTime: formatHundredths(s.bestTime),
-      seedHundredths: s.bestTime,
-    }));
-
-    // Sort by lane for display
-    assignments.sort((a, b) => a.lane - b.lane);
-
-    return { heatNumber: idx + 1, assignments };
-  });
+  // Generate heats per gender: females first, then males
+  const femaleHeats = generateHeatsForGroup(femaleSwimmers, 1, "F");
+  const maleHeats = generateHeatsForGroup(maleSwimmers, femaleHeats.length + 1, "M");
+  const heats = [...femaleHeats, ...maleHeats];
 
   // Preserve published state if it already exists
   let published = false;
