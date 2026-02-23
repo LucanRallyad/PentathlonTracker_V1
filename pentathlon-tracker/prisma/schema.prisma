@@ -1,0 +1,492 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Users (Admin / Officials / Athletes) ────────────────────────────────────
+
+model User {
+  id           String @id @default(cuid())
+  name         String
+  email        String @unique
+  passwordHash String
+  role         String @default("athlete") // "super_admin" | "admin" | "official" | "athlete"
+  // Password expiry & force change
+  passwordChangedAt    DateTime?
+  forcePasswordChange  Boolean @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  passwordHistory   PasswordHistory[]
+  accountLockout    AccountLockout?
+  sessionInfos      SessionInfo[]
+  policyAcceptances PolicyAcceptance[]
+}
+
+// ─── Athletes ────────────────────────────────────────────────────────────────
+
+model Athlete {
+  id          String  @id @default(cuid())
+  uuid        String  @unique @default(cuid()) // Public-facing UUID (no sequential IDs in URLs)
+  firstName   String
+  lastName    String
+  country     String
+  dateOfBirth String? // ISO date string — RESTRICTED classification
+  dobHash     String? // bcrypt hash of DOB for verification without exposure
+  ageCategory String  // U9, U11, U13, U15, U17, U19, Junior, Senior, Masters
+  club        String?
+  gender      String  // M, F
+  userId      String? @unique // Link to User account (auto-linked by name)
+  isMinorAthlete Boolean @default(false) // Indexed flag for efficient minor queries
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  competitionAthletes  CompetitionAthlete[]
+  fencingRankingScores FencingRankingScore[]
+  fencingDEScores      FencingDEScore[]
+  obstacleScores       ObstacleScore[]
+  swimmingScores       SwimmingScore[]
+  laserRunScores       LaserRunScore[]
+  ridingScores         RidingScore[]
+  trainingEntries      TrainingEntry[]
+  consentRecords       ConsentRecord[]
+  privacySettings      PrivacySettings?
+  deletionRequests     DeletionRequest[]
+  dataExportRequests   DataExportRequest[]
+}
+
+// ─── Competitions ────────────────────────────────────────────────────────────
+
+model Competition {
+  id              String @id @default(cuid())
+  uuid            String @unique @default(cuid()) // Public-facing UUID
+  name            String
+  date            String // ISO date
+  endDate         String // ISO date
+  location        String
+  description     String?
+  status          String @default("upcoming") // upcoming, active, completed
+  competitionType String @default("individual") // individual, relay, team
+  ageCategory     String @default("Senior") // U9..Senior, Masters, All
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  events Event[]
+  competitionAthletes CompetitionAthlete[]
+}
+
+// ─── Junction: Competition <-> Athlete ───────────────────────────────────────
+
+model CompetitionAthlete {
+  id            String @id @default(cuid())
+  competitionId String
+  athleteId     String
+  ageCategory   String? // Age category for THIS competition (may differ from athlete's current ageCategory)
+  status        String @default("registered") // registered, checked-in, absent, scratched
+
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  athlete     Athlete     @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@unique([competitionId, athleteId])
+}
+
+// ─── Events (one per discipline per competition) ────────────────────────────
+
+model Event {
+  id            String   @id @default(cuid())
+  competitionId String
+  discipline    String   // fencing_ranking, fencing_de, obstacle, swimming, laser_run, riding
+  scheduledStart  String? // ISO datetime
+  scheduledEnd    String? // ISO datetime
+  durationMinutes Int?    // Duration in minutes
+  status          String  @default("pending") // pending, in_progress, completed
+  dayLabel        String? // e.g. "Saturday, February 8"
+  sortOrder     Int      @default(0)
+  completedAt   String?  // ISO datetime
+  config        String?  // JSON string for discipline-specific config
+
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+
+  fencingRankingScores FencingRankingScore[]
+  fencingDEScores     FencingDEScore[]
+  obstacleScores      ObstacleScore[]
+  swimmingScores      SwimmingScore[]
+  laserRunScores      LaserRunScore[]
+  ridingScores        RidingScore[]
+}
+
+// ─── Discipline-Specific Score Tables ────────────────────────────────────────
+
+model FencingRankingScore {
+  id               String @id @default(cuid())
+  eventId          String
+  athleteId        String
+  victories        Int
+  totalBouts       Int
+  calculatedPoints Float
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, athleteId])
+}
+
+model FencingDEScore {
+  id               String @id @default(cuid())
+  eventId          String
+  athleteId        String
+  placement        Int
+  calculatedPoints Float
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, athleteId])
+}
+
+model ObstacleScore {
+  id               String @id @default(cuid())
+  eventId          String
+  athleteId        String
+  timeSeconds      Float
+  penaltyPoints    Int    @default(0)
+  calculatedPoints Float
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, athleteId])
+}
+
+model SwimmingScore {
+  id               String @id @default(cuid())
+  eventId          String
+  athleteId        String
+  timeHundredths   Int    // time in hundredths of a second (e.g., 7000 = 1:10.00)
+  penaltyPoints    Int    @default(0)
+  calculatedPoints Float
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, athleteId])
+}
+
+model LaserRunScore {
+  id                  String @id @default(cuid())
+  eventId             String
+  athleteId           String
+  finishTimeSeconds   Float
+  handicapStartDelay  Int    @default(0)
+  rawDelay            Int    @default(0)
+  isPackStart         Boolean @default(false)
+  shootingStation     Int    @default(0)
+  gateAssignment      String @default("A") // A, B, P
+  penaltySeconds      Int    @default(0)
+  calculatedPoints    Float
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, athleteId])
+}
+
+model RidingScore {
+  id               String @id @default(cuid())
+  eventId          String
+  athleteId        String
+  knockdowns       Int    @default(0)
+  disobediences    Int    @default(0)
+  timeOverSeconds  Int    @default(0)
+  otherPenalties   Int    @default(0)
+  calculatedPoints Float
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, athleteId])
+}
+
+// ─── Training Entries (manual athlete input) ─────────────────────────────────
+
+model TrainingEntry {
+  id          String   @id @default(cuid())
+  athleteId   String
+  discipline  String   // fencingRanking, fencingDE, obstacle, swimming, laserRun, riding
+  date        String   // ISO date string
+  notes       String?  // optional notes
+  points      Float?   // calculated or manual points
+  // Discipline-specific raw values (store what applies, leave rest null)
+  timeSeconds     Float?  // obstacle, laser run
+  timeHundredths  Int?    // swimming
+  victories       Int?    // fencing ranking
+  totalBouts      Int?    // fencing ranking
+  placement       Int?    // fencing DE
+  knockdowns      Int?    // riding
+  disobediences   Int?    // riding
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ─── PRIVACY & SECURITY MODELS ───────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── Consent Records (for minor athletes) ────────────────────────────────────
+
+model ConsentRecord {
+  id                   String   @id @default(cuid())
+  athleteId            String
+  guardianName         String
+  guardianEmail        String?
+  guardianRelationship String   // PARENT, LEGAL_GUARDIAN, COACH_WITH_AUTHORITY
+  consentType          String   // DATA_COLLECTION, PUBLIC_DISPLAY, PHOTO_USAGE, COMPETITION_PARTICIPATION
+  consentGiven         Boolean
+  consentDate          DateTime @default(now())
+  consentExpiryDate    DateTime?
+  ipAddress            String?
+  consentMethod        String   // ONLINE_FORM, PAPER_SCANNED, VERBAL_RECORDED
+  notes                String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@index([athleteId, consentType])
+}
+
+// ─── Privacy Settings (per athlete) ──────────────────────────────────────────
+
+model PrivacySettings {
+  id                     String  @id @default(cuid())
+  athleteId              String  @unique
+  showFullName           Boolean @default(true)
+  showCountry            Boolean @default(true)
+  showClub               Boolean @default(true)
+  showAgeCategory        Boolean @default(true)
+  showInDirectory        Boolean @default(true)
+  showOnLeaderboard      Boolean @default(true)
+  allowTrainingDataSharing Boolean @default(false)
+  profileVisibility      String  @default("PUBLIC") // PUBLIC, AUTHENTICATED_ONLY, PRIVATE
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+}
+
+// ─── Audit Log (append-only) ─────────────────────────────────────────────────
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  timestamp      DateTime @default(now())
+  eventType      String   // AUTH_LOGIN, AUTH_LOGOUT, DATA_ACCESS, DATA_MODIFY, etc.
+  severity       String   @default("INFO") // INFO, WARNING, ALERT, CRITICAL
+  actorId        String   // userId or "SYSTEM" or "ANONYMOUS"
+  actorRole      String?  // role at time of action
+  actorIp        String?
+  targetType     String?  // model name: "Athlete", "Score", "User", etc.
+  targetId       String?  // ID of the affected record
+  action         String   // CREATE, READ, UPDATE, DELETE, LOGIN, EXPORT, etc.
+  details        String?  // JSON string with old/new values, accessed fields, etc.
+  requestPath    String?
+  requestMethod  String?
+  responseStatus Int?
+  userAgent      String?
+
+  @@index([timestamp])
+  @@index([eventType])
+  @@index([actorId])
+  @@index([targetType, targetId])
+  @@index([severity])
+}
+
+// ─── Security Alerts ─────────────────────────────────────────────────────────
+
+model SecurityAlert {
+  id             String    @id @default(cuid())
+  timestamp      DateTime  @default(now())
+  alertType      String    // BRUTE_FORCE, DOB_SCANNING, NEW_ADMIN_IP, BULK_ACCESS, etc.
+  severity       String    // LOW, MEDIUM, HIGH, CRITICAL
+  message        String
+  details        String?   // JSON
+  acknowledged   Boolean   @default(false)
+  acknowledgedBy String?
+  acknowledgedAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([severity, acknowledged])
+  @@index([timestamp])
+}
+
+// ─── Session Info (for concurrent session tracking) ──────────────────────────
+
+model SessionInfo {
+  id           String   @id @default(cuid())
+  userId       String
+  tokenHash    String   @unique
+  fingerprint  String?  // Hash of User-Agent + IP subnet
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+  lastActiveAt DateTime @default(now())
+  expiresAt    DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// ─── Password History ────────────────────────────────────────────────────────
+
+model PasswordHistory {
+  id             String   @id @default(cuid())
+  userId         String
+  hashedPassword String
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ─── Account Lockout ─────────────────────────────────────────────────────────
+
+model AccountLockout {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  failedAttempts  Int       @default(0)
+  lockoutUntil    DateTime?
+  escalationLevel Int       @default(0)
+  lastAttemptAt   DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── DOB Login Audit ─────────────────────────────────────────────────────────
+
+model DOBLoginAttempt {
+  id        String   @id @default(cuid())
+  ip        String
+  athleteId String?
+  success   Boolean
+  userAgent String?
+  timestamp DateTime @default(now())
+
+  @@index([ip, timestamp])
+  @@index([athleteId, timestamp])
+}
+
+// ─── Data Retention Log ──────────────────────────────────────────────────────
+
+model DataRetentionLog {
+  id            String   @id @default(cuid())
+  action        String   // ARCHIVED, ANONYMIZED, DELETED
+  targetType    String
+  targetId      String
+  details       String?  // JSON
+  processedAt   DateTime @default(now())
+}
+
+// ─── Deletion Requests ───────────────────────────────────────────────────────
+
+model DeletionRequest {
+  id                    String    @id @default(cuid())
+  athleteId             String
+  requestedBy           String    // userId or "SELF"
+  reason                String?
+  status                String    @default("PENDING") // PENDING, COOLING_OFF, PROCESSING, COMPLETED, CANCELLED
+  requestDate           DateTime  @default(now())
+  scheduledDeletionDate DateTime?
+  completedDate         DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([scheduledDeletionDate])
+}
+
+// ─── Data Export Requests ────────────────────────────────────────────────────
+
+model DataExportRequest {
+  id          String    @id @default(cuid())
+  athleteId   String
+  requestedAt DateTime  @default(now())
+  status      String    @default("PENDING") // PENDING, PROCESSING, READY, EXPIRED
+  downloadUrl String?
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@index([athleteId, requestedAt])
+}
+
+// ─── Cookie Consent ──────────────────────────────────────────────────────────
+
+model CookieConsent {
+  id               String   @id @default(cuid())
+  userId           String?
+  sessionId        String?  // For anonymous users
+  strictlyNecessary Boolean @default(true)
+  functional       Boolean  @default(false)
+  analytics        Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// ─── Policy Versions & Acceptance ────────────────────────────────────────────
+
+model PolicyVersion {
+  id            String   @id @default(cuid())
+  policyType    String   // PRIVACY_POLICY, TERMS_OF_SERVICE, MINOR_PRIVACY_NOTICE
+  version       String
+  effectiveDate DateTime
+  content       String   // Full policy text
+  createdAt     DateTime @default(now())
+
+  acceptances PolicyAcceptance[]
+
+  @@unique([policyType, version])
+  @@index([policyType, effectiveDate])
+}
+
+model PolicyAcceptance {
+  id              String   @id @default(cuid())
+  userId          String
+  policyVersionId String
+  acceptedAt      DateTime @default(now())
+  ipAddress       String?
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  policyVersion PolicyVersion @relation(fields: [policyVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, policyVersionId])
+  @@index([userId])
+}

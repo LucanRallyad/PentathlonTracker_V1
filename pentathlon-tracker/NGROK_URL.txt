@@ -1,0 +1,11 @@
+Your ngrok Public URL:
+https://ungeneralizing-nonsubtractively-marla.ngrok-free.dev
+
+This URL forwards to: http://localhost:3000
+
+Share this URL with anyone you want to access your site!
+
+Note: This URL will change each time you restart ngrok (unless you upgrade to a paid plan for a static domain).
+
+To view ngrok dashboard and request logs:
+http://localhost:4040

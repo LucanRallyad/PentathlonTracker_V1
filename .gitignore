@@ -30,3 +30,7 @@ yarn-error.log*
 
 # Test artifacts
 test-results/
+
+# Root-level test tooling (not part of the app)
+/package.json
+/package-lock.json
