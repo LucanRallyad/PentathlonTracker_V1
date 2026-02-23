@@ -1,0 +1,64 @@
+Terminal Commands
+
+# Navigate to the project directory
+cd ~/Documents/Cursor/"Project CAN"/pentathlon-tracker
+
+# Start the development server
+npx next dev
+
+If port 3000 is already in use:
+
+# Option A: Use a different port
+npx next dev --port 3001
+
+# Option B: Kill whatever's on port 3000, then start
+lsof -ti :3000 | xargs kill -9
+npx next dev
+
+If you get a lock file error: 
+rm -rf .next/dev/lock
+npx next dev
+
+Open server to network: 
+
+1.
+
+Run instead do normal npm run dev: 
+npm run dev -- --hostname 0.0.0.0
+
+Or Directly: 
+next dev -H 0.0.0.0
+
+
+2. Find my mac's local IP 
+
+Run: 
+ipconfig getifaddr en0
+
+Example output: 
+192.168.1.23
+
+3. Access from another device 
+
+If your port is 3000, others on the same Wi-Fi go to:
+
+http://192.168.1.23:3000
+
+** NextAuth (Cookies) 
+If authentication breaks on other devices, it’s usually because of this in .env:
+NEXTAUTH_URL=http://localhost:3000
+
+Change it too: ** Change you my Macs ip 
+NEXTAUTH_URL=http://192.168.1.23:3000
+
+Final result: 
+
+Run: 
+npm run dev -- --hostname 0.0.0.0
+
+Then visit from another device:
+http://YOUR_LOCAL_IP:3000
+
+
+
+
