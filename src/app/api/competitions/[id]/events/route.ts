@@ -24,9 +24,22 @@ export async function POST(
   const { id } = await params;
   const data = await req.json();
 
+  // Extract and validate duration fields
+  const { durationMinutes, scheduledEnd, scheduledStart, ...rest } = data;
+
+  // If scheduledStart is provided but scheduledEnd is not, calculate it from duration
+  let computedEnd = scheduledEnd || null;
+  if (scheduledStart && !computedEnd && durationMinutes) {
+    const start = new Date(scheduledStart);
+    computedEnd = new Date(start.getTime() + durationMinutes * 60 * 1000).toISOString();
+  }
+
   const event = await prisma.event.create({
     data: {
-      ...data,
+      ...rest,
+      scheduledStart: scheduledStart || null,
+      durationMinutes: durationMinutes ? parseInt(String(durationMinutes)) : null,
+      scheduledEnd: computedEnd,
       competitionId: id,
     },
   });

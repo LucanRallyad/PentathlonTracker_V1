@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, isErrorResponse } from "@/lib/auth";
+import { withCsrfProtection } from "@/lib/security/csrf";
 
 // GET: list athletes in a competition (public)
 export async function GET(
@@ -23,7 +24,7 @@ export async function GET(
 //   { athleteId: "existing-id" }                         → link existing athlete
 //   { athleteId: "existing-id", ageCategory: "U17" }     → link existing athlete with competition-specific age category
 //   { firstName, lastName, country, ... }                → find or create athlete then link
-export async function POST(
+async function postCompetitionAthleteHandler(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -161,9 +162,11 @@ export async function POST(
   }
 }
 
+export const POST = withCsrfProtection(postCompetitionAthleteHandler);
+
 // DELETE: remove an athlete from the competition (admin only)
 // Body: { athleteId: "..." }
-export async function DELETE(
+async function deleteCompetitionAthleteHandler(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -189,3 +192,5 @@ export async function DELETE(
     return NextResponse.json({ error: "Failed to remove athlete" }, { status: 500 });
   }
 }
+
+export const DELETE = withCsrfProtection(deleteCompetitionAthleteHandler);

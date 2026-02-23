@@ -13,7 +13,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Target,
-  LogIn,
   UserCircle,
   Medal,
   UserCog,
@@ -22,6 +21,8 @@ import {
   DollarSign,
   Crown,
   GitCompare,
+  TrendingUp,
+  Upload,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/useAuth";
@@ -50,6 +51,7 @@ export function Sidebar() {
     { label: "Home", href: "/dashboard", icon: <Target size={18} /> },
     { label: "Competitions", href: "/competitions", icon: <Trophy size={18} /> },
     { label: "Athletes", href: "/athletes", icon: <Users size={18} /> },
+    { label: "Rankings", href: "/rankings", icon: <TrendingUp size={18} /> },
     { label: "Comparison", href: "/comparison", icon: <GitCompare size={18} /> },
   ];
 
@@ -72,6 +74,7 @@ export function Sidebar() {
     { label: "Dashboard", href: "/super-admin/dashboard", icon: <BarChart3 size={18} /> },
     { label: "Finances", href: "/super-admin/finances", icon: <DollarSign size={18} /> },
     { label: "Accounts", href: "/super-admin/accounts", icon: <Crown size={18} /> },
+    { label: "Import Data", href: "/super-admin/import", icon: <Upload size={18} /> },
   ];
 
   const sidebarContent = (isMobile: boolean) => {
@@ -199,34 +202,20 @@ export function Sidebar() {
           )}
         </nav>
 
-        {/* Footer: login links or user info */}
-        {!loaded && (
+        {/* Footer: user info (logged in only) */}
+        {!loaded && isLoggedIn && (
           <div className="border-t border-[#E9E9E7] px-2 py-2">
-            {isLoggedIn ? (
-              <div className={cn("flex items-center gap-2 px-2 py-1.5", isCollapsed && "justify-center")}>
-                <div className="w-6 h-6 rounded-full bg-[#0B6E99] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
-                  {user.name?.charAt(0)?.toUpperCase() || "?"}
-                </div>
-                {!isCollapsed && (
-                  <div className="min-w-0">
-                    <div className="text-xs font-medium text-[#37352F] truncate">{user.name}</div>
-                    <div className="text-[10px] text-[#9B9A97] capitalize">{user.role?.replace('_', ' ')}</div>
-                  </div>
-                )}
+            <div className={cn("flex items-center gap-2 px-2 py-1.5", isCollapsed && "justify-center")}>
+              <div className="w-6 h-6 rounded-full bg-[#0B6E99] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                {user.name?.charAt(0)?.toUpperCase() || "?"}
               </div>
-            ) : (
-              <Link
-                href="/login"
-                className={cn(
-                  "flex items-center gap-2.5 px-2 py-1.5 rounded-[3px] text-sm text-[#787774] hover:bg-[#EFEFEF] hover:text-[#37352F] transition-colors",
-                  isCollapsed && "justify-center"
-                )}
-                title={isCollapsed ? "Login" : undefined}
-              >
-                <LogIn size={16} className="flex-shrink-0" />
-                {!isCollapsed && <span>Login</span>}
-              </Link>
-            )}
+              {!isCollapsed && (
+                <div className="min-w-0">
+                  <div className="text-xs font-medium text-[#37352F] truncate">{user.name}</div>
+                  <div className="text-[10px] text-[#9B9A97] capitalize">{user.role?.replace('_', ' ')}</div>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </>

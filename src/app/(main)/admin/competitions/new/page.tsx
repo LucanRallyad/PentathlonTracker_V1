@@ -27,12 +27,12 @@ export default function NewCompetitionPage() {
     "swimming",
     "laser_run",
   ]);
-  const [eventSchedules, setEventSchedules] = useState<Record<string, { scheduledStart: string; dayLabel: string }>>({
-    fencing_ranking: { scheduledStart: "", dayLabel: "" },
-    fencing_de: { scheduledStart: "", dayLabel: "" },
-    obstacle: { scheduledStart: "", dayLabel: "" },
-    swimming: { scheduledStart: "", dayLabel: "" },
-    laser_run: { scheduledStart: "", dayLabel: "" },
+  const [eventSchedules, setEventSchedules] = useState<Record<string, { scheduledStart: string; dayLabel: string; durationMinutes: number }>>({
+    fencing_ranking: { scheduledStart: "", dayLabel: "", durationMinutes: 60 },
+    fencing_de: { scheduledStart: "", dayLabel: "", durationMinutes: 60 },
+    obstacle: { scheduledStart: "", dayLabel: "", durationMinutes: 60 },
+    swimming: { scheduledStart: "", dayLabel: "", durationMinutes: 60 },
+    laser_run: { scheduledStart: "", dayLabel: "", durationMinutes: 60 },
   });
   const [saving, setSaving] = useState(false);
 
@@ -61,7 +61,7 @@ export default function NewCompetitionPage() {
       if (!prev.includes(d)) {
         setEventSchedules((schedules) => ({
           ...schedules,
-          [d]: { scheduledStart: "", dayLabel: "" },
+          [d]: { scheduledStart: "", dayLabel: "", durationMinutes: 60 },
         }));
       } else {
         // Remove schedule when discipline is removed
@@ -74,7 +74,7 @@ export default function NewCompetitionPage() {
     });
   };
 
-  const updateEventSchedule = (discipline: string, field: "scheduledStart" | "dayLabel", value: string) => {
+  const updateEventSchedule = (discipline: string, field: "scheduledStart" | "dayLabel" | "durationMinutes", value: string | number) => {
     setEventSchedules((prev) => ({
       ...prev,
       [discipline]: {
@@ -113,7 +113,13 @@ export default function NewCompetitionPage() {
       // Create events
       for (let i = 0; i < selectedDisciplines.length; i++) {
         const discipline = selectedDisciplines[i];
-        const schedule = eventSchedules[discipline] || {};
+        const schedule = eventSchedules[discipline] || { scheduledStart: "", dayLabel: "", durationMinutes: 60 };
+        const durationMinutes = schedule.durationMinutes || 60;
+        let scheduledEnd: string | null = null;
+        if (schedule.scheduledStart) {
+          const startDate = new Date(schedule.scheduledStart);
+          scheduledEnd = new Date(startDate.getTime() + durationMinutes * 60 * 1000).toISOString();
+        }
         await fetch(`/api/competitions/${competition.id}/events`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -123,6 +129,8 @@ export default function NewCompetitionPage() {
             status: "pending",
             scheduledStart: schedule.scheduledStart || null,
             dayLabel: schedule.dayLabel || null,
+            durationMinutes,
+            scheduledEnd,
           }),
         });
       }
@@ -144,8 +152,8 @@ export default function NewCompetitionPage() {
           { label: "New Competition" },
         ]}
       />
-      <div className="max-w-[600px] mx-auto px-6 py-12">
-        <h1 className="text-[40px] font-bold text-[#37352F] tracking-tight mb-8 leading-tight">
+      <div className="max-w-[600px] mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <h1 className="text-2xl sm:text-[40px] font-bold text-[#37352F] tracking-tight mb-8 leading-tight">
           New Competition
         </h1>
 
@@ -161,7 +169,7 @@ export default function NewCompetitionPage() {
             />
           </Field>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Start Date" required>
               <input
                 type="date"
@@ -309,7 +317,7 @@ export default function NewCompetitionPage() {
                     <div className="font-medium text-sm text-[#37352F] mb-2">
                       {DISCIPLINE_NAMES[discipline]}
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
                         <label className="block text-xs text-[#787774] mb-1">
                           Scheduled Date & Time
@@ -318,6 +326,20 @@ export default function NewCompetitionPage() {
                           type="datetime-local"
                           value={eventSchedules[discipline]?.scheduledStart || ""}
                           onChange={(e) => updateEventSchedule(discipline, "scheduledStart", e.target.value)}
+                          className="input-field text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-[#787774] mb-1">
+                          Duration (minutes)
+                        </label>
+                        <input
+                          type="number"
+                          min={15}
+                          max={480}
+                          step={5}
+                          value={eventSchedules[discipline]?.durationMinutes ?? 60}
+                          onChange={(e) => updateEventSchedule(discipline, "durationMinutes", parseInt(e.target.value) || 60)}
                           className="input-field text-sm"
                         />
                       </div>

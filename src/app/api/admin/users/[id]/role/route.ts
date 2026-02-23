@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, isErrorResponse } from "@/lib/auth";
+import { withCsrfProtection } from "@/lib/security/csrf";
 
 // PATCH /api/admin/users/:id/role — promote or demote a user (admin only)
 // Body: { role: "admin" | "athlete" | "official" }
-export async function PATCH(
+async function patchUserRoleHandler(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -52,3 +53,5 @@ export async function PATCH(
     );
   }
 }
+
+export const PATCH = withCsrfProtection(patchUserRoleHandler);

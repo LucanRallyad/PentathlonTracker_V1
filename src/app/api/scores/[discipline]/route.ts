@@ -19,6 +19,7 @@ import {
 } from "@/lib/validation/schemas";
 import { z } from "zod";
 import { AppError, ErrorCode } from "@/lib/errors/AppError";
+import { withCsrfProtection } from "@/lib/security/csrf";
 
 export async function GET(
   req: NextRequest,
@@ -47,7 +48,7 @@ export async function GET(
   return NextResponse.json(scores);
 }
 
-export async function POST(
+async function postScoreHandler(
   req: NextRequest,
   { params }: { params: Promise<{ discipline: string }> }
 ) {
@@ -292,3 +293,5 @@ export async function POST(
 
   return NextResponse.json(results);
 }
+
+export const POST = withCsrfProtection(postScoreHandler);

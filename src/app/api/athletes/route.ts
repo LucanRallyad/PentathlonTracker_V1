@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, isErrorResponse } from "@/lib/auth";
 import { athleteCreateSchema, validateRequest } from "@/lib/validation/schemas";
+import { withCsrfProtection } from "@/lib/security/csrf";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -45,7 +46,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(athletes);
 }
 
-export async function POST(req: NextRequest) {
+async function postAthleteHandler(req: NextRequest) {
   // PROTECTED: only admins can create athletes
   const adminOrError = await requireAdmin(req);
   if (isErrorResponse(adminOrError)) return adminOrError;
@@ -73,3 +74,5 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export const POST = withCsrfProtection(postAthleteHandler);

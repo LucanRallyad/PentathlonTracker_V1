@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, isErrorResponse } from "@/lib/auth";
 import { competitionCreateSchema, validateRequest } from "@/lib/validation/schemas";
+import { withCsrfProtection } from "@/lib/security/csrf";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(competitions);
 }
 
-export async function POST(req: NextRequest) {
+async function postCompetitionHandler(req: NextRequest) {
   // PROTECTED: only admins can create competitions
   const adminOrError = await requireAdmin(req);
   if (isErrorResponse(adminOrError)) return adminOrError;
@@ -52,3 +53,5 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export const POST = withCsrfProtection(postCompetitionHandler);

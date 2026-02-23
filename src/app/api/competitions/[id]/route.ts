@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, isErrorResponse } from "@/lib/auth";
 import { competitionUpdateSchema, validateRequest } from "@/lib/validation/schemas";
+import { withCsrfProtection } from "@/lib/security/csrf";
 
 export async function GET(
   _req: NextRequest,
@@ -40,7 +41,7 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
   completed: [], // terminal state
 };
 
-export async function PATCH(
+async function patchCompetitionHandler(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -86,7 +87,9 @@ export async function PATCH(
   return NextResponse.json(competition);
 }
 
-export async function DELETE(
+export const PATCH = withCsrfProtection(patchCompetitionHandler);
+
+async function deleteCompetitionHandler(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -117,3 +120,5 @@ export async function DELETE(
     );
   }
 }
+
+export const DELETE = withCsrfProtection(deleteCompetitionHandler);

@@ -31,28 +31,12 @@ export function getCsrfTokenFromCookie(req: NextRequest): string | null {
 }
 
 /**
- * Get CSRF token from request header or body
+ * Get CSRF token from request header.
+ * We use headers only to avoid consuming the request body.
+ * Frontend should send token in X-CSRF-Token header.
  */
-export async function getCsrfTokenFromRequest(req: NextRequest): Promise<string | null> {
-  // Check header first
-  const headerToken = req.headers.get(CSRF_TOKEN_HEADER);
-  if (headerToken) {
-    return headerToken;
-  }
-
-  // For POST/PUT/PATCH/DELETE, check body
-  const method = req.method.toUpperCase();
-  if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-    try {
-      const body = await req.json();
-      return body.csrfToken || null;
-    } catch {
-      // If body parsing fails, return null
-      return null;
-    }
-  }
-
-  return null;
+export function getCsrfTokenFromRequest(req: NextRequest): string | null {
+  return req.headers.get(CSRF_TOKEN_HEADER);
 }
 
 /**
@@ -70,55 +54,70 @@ export function setCsrfTokenCookie(response: NextResponse, token: string): void 
 }
 
 /**
- * Validate CSRF token from request against cookie
+ * Validate CSRF token from request against cookie.
+ * Uses constant-time comparison to prevent timing attacks.
  */
-export async function validateCsrfToken(req: NextRequest): Promise<boolean> {
+export function validateCsrfToken(req: NextRequest): boolean {
   const cookieToken = getCsrfTokenFromCookie(req);
-  const requestToken = await getCsrfTokenFromRequest(req);
+  const requestToken = getCsrfTokenFromRequest(req);
 
   if (!cookieToken || !requestToken) {
     return false;
   }
 
-  // Use constant-time comparison to prevent timing attacks
-  return cookieToken === requestToken;
+  // Constant-time comparison to prevent timing attacks
+  if (cookieToken.length !== requestToken.length) {
+    return false;
+  }
+
+  let result = 0;
+  for (let i = 0; i < cookieToken.length; i++) {
+    result |= cookieToken.charCodeAt(i) ^ requestToken.charCodeAt(i);
+  }
+  return result === 0;
 }
 
 /**
- * Middleware to require CSRF token validation for state-changing operations
+ * Middleware to require CSRF token validation for state-changing operations.
+ * Works with Next.js route handlers that take (req, context) or (req, ...args).
+ * 
+ * Usage:
+ *   export const POST = withCsrfProtection(async (req) => { ... });
+ *   export const POST = withCsrfProtection(async (req, { params }) => { ... });
  */
-export function requireCsrfToken<T = any>(
-  handler: (req: NextRequest, context: T) => Promise<NextResponse>
-): (req: NextRequest, context: T) => Promise<NextResponse> {
-  return async (req: NextRequest, context: T) => {
+export function withCsrfProtection<T extends unknown[]>(
+  handler: (req: NextRequest, ...args: T) => Promise<NextResponse>
+): (req: NextRequest, ...args: T) => Promise<NextResponse> {
+  return async (req: NextRequest, ...args: T) => {
     const method = req.method.toUpperCase();
     
     // Only require CSRF for state-changing methods
     if (!["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-      return handler(req, context);
+      return handler(req, ...args);
     }
 
-    // Skip CSRF for authentication endpoints (they have their own protection)
+    // Skip CSRF for authentication endpoints (they have their own protection via rate limiting)
     const pathname = req.nextUrl.pathname;
     if (pathname.startsWith("/api/auth/")) {
-      return handler(req, context);
+      return handler(req, ...args);
     }
 
-    const isValid = await validateCsrfToken(req);
+    const isValid = validateCsrfToken(req);
     if (!isValid) {
       return NextResponse.json(
-        { error: "Invalid CSRF token" },
+        { error: "Invalid or missing CSRF token", code: "CSRF_TOKEN_INVALID" },
         { status: 403 }
       );
     }
 
-    return handler(req, context);
+    return handler(req, ...args);
   };
 }
 
 /**
- * Generate CSRF token endpoint handler
- * Call this from the frontend to get a CSRF token
+ * Generate CSRF token endpoint handler.
+ * Call this from the frontend to get a CSRF token.
+ * Token is returned in response body AND set as httpOnly cookie.
  */
 export async function generateCsrfTokenHandler(req: NextRequest): Promise<NextResponse> {
   // Only allow GET requests
@@ -144,3 +143,6 @@ export async function generateCsrfTokenHandler(req: NextRequest): Promise<NextRe
 
   return response;
 }
+
+// Export constants for use in frontend
+export { CSRF_TOKEN_HEADER };

@@ -100,9 +100,11 @@ model Event {
   id            String   @id @default(cuid())
   competitionId String
   discipline    String   // fencing_ranking, fencing_de, obstacle, swimming, laser_run, riding
-  scheduledStart String? // ISO datetime
-  status        String   @default("pending") // pending, in_progress, completed
-  dayLabel      String?  // e.g. "Saturday, February 8"
+  scheduledStart  String? // ISO datetime
+  scheduledEnd    String? // ISO datetime
+  durationMinutes Int?    // Duration in minutes
+  status          String  @default("pending") // pending, in_progress, completed
+  dayLabel        String? // e.g. "Saturday, February 8"
   sortOrder     Int      @default(0)
   completedAt   String?  // ISO datetime
   config        String?  // JSON string for discipline-specific config

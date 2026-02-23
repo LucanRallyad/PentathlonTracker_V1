@@ -40,6 +40,8 @@ interface Event {
   id: string;
   discipline: string;
   scheduledStart: string;
+  scheduledEnd: string | null;
+  durationMinutes: number | null;
   status: string;
   dayLabel: string;
   sortOrder: number;
@@ -1464,7 +1466,10 @@ function ScheduleTab({
     riding: "Riding",
   };
 
-  const EVENT_BLOCK_HEIGHT = 2 * SLOT_HEIGHT; // 1 hour = 2 slots
+  function getEventBlockHeight(event: Event): number {
+    const duration = event.durationMinutes || 60; // default to 60 minutes
+    return (duration / 30) * SLOT_HEIGHT;
+  }
 
   return (
     <div className="overflow-x-auto">
@@ -1528,7 +1533,7 @@ function ScheduleTab({
                           top,
                           left: 2,
                           right: 2,
-                          height: EVENT_BLOCK_HEIGHT,
+                          height: getEventBlockHeight(event),
                           backgroundColor: color,
                           zIndex: 5,
                         }}

@@ -38,3 +38,4 @@ export { withCompetitionAccess } from './withCompetitionAccess';
 export { withRateLimit, RATE_LIMIT_TIERS, checkRateLimit } from './withRateLimit';
 export { withValidation } from './withValidation';
 export { filterFieldsForRole, filterArrayForRole } from './fieldFilter';
+export { withCsrfProtection, generateCsrfToken, getCsrfTokenFromCookie, CSRF_TOKEN_HEADER } from '@/lib/security/csrf';

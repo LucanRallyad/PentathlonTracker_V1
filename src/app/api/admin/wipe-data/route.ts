@@ -3,8 +3,9 @@ import { getSessionFromCookie } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppError, ErrorCode } from "@/lib/errors/AppError";
 import { handleApiError } from "@/lib/errors/errorHandler";
+import { withCsrfProtection } from "@/lib/security/csrf";
 
-export async function POST(req: NextRequest) {
+async function wipeDataHandler(req: NextRequest) {
   const session = getSessionFromCookie(req.headers.get("cookie"));
 
   // Check if user is authenticated and is an admin
@@ -66,3 +67,5 @@ export async function POST(req: NextRequest) {
     return handleApiError(new AppError(ErrorCode.DATABASE_ERROR, "Failed to wipe data"));
   }
 }
+
+export const POST = withCsrfProtection(wipeDataHandler);

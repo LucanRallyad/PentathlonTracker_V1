@@ -3,8 +3,9 @@ import { getSessionFromCookie } from '@/lib/auth';
 import { passwordPolicy } from '@/lib/security/passwordPolicy';
 import { sessionManager } from '@/lib/security/sessionManager';
 import { auditLogger, AuditEventType, AuditAction, AuditSeverity } from '@/lib/audit/auditLogger';
+import { withCsrfProtection } from '@/lib/security/csrf';
 
-export async function POST(req: NextRequest) {
+async function changePasswordHandler(req: NextRequest) {
   const session = getSessionFromCookie(req.headers.get('cookie'));
 
   if (!session || !('userId' in session)) {
@@ -53,3 +54,5 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ success: true, message: 'Password changed. Please log in again.' });
 }
+
+export const POST = withCsrfProtection(changePasswordHandler);

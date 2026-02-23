@@ -9,6 +9,7 @@ import { calculateLaserRun } from "@/lib/scoring/laser-run";
 import { calculateRiding } from "@/lib/scoring/riding";
 import type { AgeCategory } from "@/lib/scoring/types";
 import { trainingEntrySchema, deleteTrainingEntrySchema, validateRequest } from "@/lib/validation/schemas";
+import { withCsrfProtection } from "@/lib/security/csrf";
 
 /**
  * GET /api/athlete/training?discipline=obstacle
@@ -47,7 +48,7 @@ export async function GET(req: NextRequest) {
  * POST /api/athlete/training
  * Create a new training entry for the logged-in athlete.
  */
-export async function POST(req: NextRequest) {
+async function postTrainingHandler(req: NextRequest) {
   const result = await resolveAthleteFromSession(req);
   if (isErrorResponse(result)) return result;
 
@@ -157,11 +158,13 @@ export async function POST(req: NextRequest) {
   return NextResponse.json(entry, { status: 201 });
 }
 
+export const POST = withCsrfProtection(postTrainingHandler);
+
 /**
  * DELETE /api/athlete/training
  * Delete a training entry by id (body: { id: string }).
  */
-export async function DELETE(req: NextRequest) {
+async function deleteTrainingHandler(req: NextRequest) {
   const result = await resolveAthleteFromSession(req);
   if (isErrorResponse(result)) return result;
 
@@ -198,3 +201,5 @@ export async function DELETE(req: NextRequest) {
 
   return NextResponse.json({ success: true });
 }
+
+export const DELETE = withCsrfProtection(deleteTrainingHandler);
