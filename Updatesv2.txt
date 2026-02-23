@@ -3,3 +3,8 @@ Create a new tab under all login views on the sidebar, This tab should be called
 When creating a new competition currently you can only add event blocks that are 1 hour long, please redo the time system so its able to add events for however long. 
 Under the super admin area add and area that I can upload excel documents from past competitons to be able to input their data into the current system. The software needs to be able to read through the excel file and figure out what data is appropriate and sort it into a competition. I do have a question regarding this request, would I get better resuilts if I linked a cluade api into the system so that claude can look through the files? 
 
+
+/*
+
+Drop down menu for club input area, have the clubs sign up and register in the database for this to work.
+Update the event schedule area when creating a new competition as current one is clunky
