@@ -147,7 +147,7 @@ export const ridingScoreSchema = z.object({
 export const athleteCreateSchema = z.object({
   firstName: z.string().min(1, "First name is required").max(100),
   lastName: z.string().min(1, "Last name is required").max(100),
-  country: z.string().length(2, "Country must be 2-letter code").default(""),
+  country: z.string().length(3, "Country must be 3-letter code (e.g. CAN, USA)").default(""),
   ageCategory: z.string().max(50).optional(),
   gender: z.enum(["M", "F"]).optional(),
   club: z.string().max(255).nullable().optional(),

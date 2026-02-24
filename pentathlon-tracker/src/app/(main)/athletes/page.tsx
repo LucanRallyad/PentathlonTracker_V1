@@ -134,10 +134,10 @@ export default function AthletesPage() {
                   <input
                     type="text"
                     value={createForm.country}
-                    onChange={(e) => setCreateForm((f) => ({ ...f, country: e.target.value.toUpperCase().slice(0, 2) }))}
+                    onChange={(e) => setCreateForm((f) => ({ ...f, country: e.target.value.toUpperCase().slice(0, 3) }))}
                     className="w-full px-3 py-2 text-sm border border-[#E9E9E7] rounded-[3px] bg-white text-[#37352F] outline-none focus:border-[#0B6E99] transition-colors"
-                    placeholder="CA"
-                    maxLength={2}
+                    placeholder="CAN"
+                    maxLength={3}
                   />
                 </div>
                 <div>
