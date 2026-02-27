@@ -69,13 +69,16 @@ interface Props {
   eventName: string;
   onSubmit: (data: {
     overallTimeSeconds: number;
-    laps: LapRecord[];
+    laps: { lap: number; splitTimestamp: number; type: "run" | "shoot" }[];
+    shootTimes: { visit: number; shootTimeSeconds: number; timedOut: boolean }[];
     totalShootTimeSeconds: number;
     totalRunTimeSeconds: number;
     handicapDelay: number;
     startMode: string;
     gate: string;
     targetPosition: number;
+    totalLaps: number;
+    wave: number;
   }) => void;
 }
 
@@ -100,36 +103,40 @@ export default function LaserRunTimerDashboard({
   const [currentLap, setCurrentLap] = useState(1);
 
   const mainStartRef = useRef(0);
+  const mainPausedAtRef = useRef(0);
   const mainRafRef = useRef<number>(0);
   const shootStartRef = useRef(0);
   const shootRafRef = useRef<number>(0);
+  const shootElapsedRef = useRef(0);
+  const currentLapRef = useRef(1);
 
   const audio = useAudioFeedback();
 
-  // Main timer tick
   const mainTick = useCallback(() => {
     const now = performance.now();
     setMainElapsed((now - mainStartRef.current) / 1000);
     mainRafRef.current = requestAnimationFrame(mainTick);
   }, []);
 
-  // Shoot timer tick with 50s auto-stop
   const shootTick = useCallback(() => {
     const now = performance.now();
     const elapsed = (now - shootStartRef.current) / 1000;
     if (elapsed >= SHOOT_MAX_SECONDS) {
       setShootElapsed(SHOOT_MAX_SECONDS);
+      shootElapsedRef.current = SHOOT_MAX_SECONDS;
       setShooting(false);
+      if (shootRafRef.current) cancelAnimationFrame(shootRafRef.current);
       audio.shootTimeout();
       setLaps((prev) => [
         ...prev,
-        { lapNumber: currentLap, type: "shoot", splitSeconds: SHOOT_MAX_SECONDS },
+        { lapNumber: currentLapRef.current, type: "shoot", splitSeconds: SHOOT_MAX_SECONDS },
       ]);
       return;
     }
     setShootElapsed(elapsed);
+    shootElapsedRef.current = elapsed;
     shootRafRef.current = requestAnimationFrame(shootTick);
-  }, [audio, currentLap]);
+  }, [audio]);
 
   useEffect(() => {
     return () => {
@@ -144,6 +151,7 @@ export default function LaserRunTimerDashboard({
     setMainElapsed(0);
     setLaps([]);
     setCurrentLap(1);
+    currentLapRef.current = 1;
     setMainState("running");
     mainRafRef.current = requestAnimationFrame(mainTick);
   }, [audio, mainTick]);
@@ -152,6 +160,7 @@ export default function LaserRunTimerDashboard({
     audio.stopBeep();
     if (mainRafRef.current) cancelAnimationFrame(mainRafRef.current);
     if (shootRafRef.current) cancelAnimationFrame(shootRafRef.current);
+    mainPausedAtRef.current = performance.now();
     setShooting(false);
     setMainState("stopped");
   }, [audio]);
@@ -160,15 +169,19 @@ export default function LaserRunTimerDashboard({
     audio.lapBeep();
     setLaps((prev) => [
       ...prev,
-      { lapNumber: currentLap, type: "run", splitSeconds: mainElapsed },
+      { lapNumber: currentLapRef.current, type: "run", splitSeconds: mainElapsed },
     ]);
-    setCurrentLap((c) => c + 1);
-  }, [audio, currentLap, mainElapsed]);
+    setCurrentLap((c) => {
+      currentLapRef.current = c + 1;
+      return c + 1;
+    });
+  }, [audio, mainElapsed]);
 
   const handleShootLap = useCallback(() => {
     audio.shootStart();
     shootStartRef.current = performance.now();
     setShootElapsed(0);
+    shootElapsedRef.current = 0;
     setShooting(true);
     shootRafRef.current = requestAnimationFrame(shootTick);
   }, [audio, shootTick]);
@@ -177,13 +190,16 @@ export default function LaserRunTimerDashboard({
     audio.shootStop();
     if (shootRafRef.current) cancelAnimationFrame(shootRafRef.current);
     setShooting(false);
+    const finalShootElapsed = shootElapsedRef.current;
     setLaps((prev) => [
       ...prev,
-      { lapNumber: currentLap, type: "shoot", splitSeconds: shootElapsed },
+      { lapNumber: currentLapRef.current, type: "shoot", splitSeconds: finalShootElapsed },
     ]);
-  }, [audio, currentLap, shootElapsed]);
+  }, [audio]);
 
   const handleCancel = useCallback(() => {
+    const pauseDuration = performance.now() - mainPausedAtRef.current;
+    mainStartRef.current += pauseDuration;
     setMainState("running");
     mainRafRef.current = requestAnimationFrame(mainTick);
   }, [mainTick]);
@@ -192,16 +208,32 @@ export default function LaserRunTimerDashboard({
     audio.confirmChime();
     const shootLaps = laps.filter((l) => l.type === "shoot");
     const totalShoot = shootLaps.reduce((s, l) => s + l.splitSeconds, 0);
+
+    const apiLaps = laps.map((l) => ({
+      lap: l.lapNumber,
+      splitTimestamp: l.splitSeconds,
+      type: l.type,
+    }));
+
+    const apiShootTimes = shootLaps.map((l, i) => ({
+      visit: i + 1,
+      shootTimeSeconds: l.splitSeconds,
+      timedOut: l.splitSeconds >= SHOOT_MAX_SECONDS,
+    }));
+
     setMainState("confirmed");
     onSubmit({
       overallTimeSeconds: mainElapsed,
-      laps,
+      laps: apiLaps,
+      shootTimes: apiShootTimes,
       totalShootTimeSeconds: totalShoot,
-      totalRunTimeSeconds: mainElapsed - totalShoot,
+      totalRunTimeSeconds: Math.max(0, mainElapsed - totalShoot),
       handicapDelay,
       startMode,
       gate,
       targetPosition,
+      totalLaps,
+      wave,
     });
   }, [
     audio,
@@ -211,6 +243,8 @@ export default function LaserRunTimerDashboard({
     startMode,
     gate,
     targetPosition,
+    totalLaps,
+    wave,
     onSubmit,
   ]);
 

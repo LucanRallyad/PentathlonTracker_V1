@@ -21,9 +21,18 @@ export async function GET(
     select: { id: true },
   });
   const eventIds = events.map((e) => e.id);
-  where.eventId = { in: eventIds };
 
-  if (eventId) where.eventId = eventId;
+  if (eventId) {
+    if (!eventIds.includes(eventId)) {
+      return NextResponse.json(
+        { error: "Event does not belong to this competition" },
+        { status: 400 }
+      );
+    }
+    where.eventId = eventId;
+  } else {
+    where.eventId = { in: eventIds };
+  }
   if (status) where.status = status;
 
   const scores = await prisma.preliminaryScore.findMany({

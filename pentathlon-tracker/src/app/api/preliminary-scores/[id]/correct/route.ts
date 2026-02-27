@@ -40,24 +40,31 @@ export async function PATCH(
     );
   }
 
-  const officialScoreId = await promoteScore(
-    score.discipline,
-    score.eventId,
-    score.athleteId,
-    correctedData,
-    score.event.competition.ageCategory
-  );
+  try {
+    const officialScoreId = await promoteScore(
+      score.discipline,
+      score.eventId,
+      score.athleteId,
+      correctedData,
+      score.event.competition.ageCategory
+    );
 
-  const updated = await prisma.preliminaryScore.update({
-    where: { id },
-    data: {
-      status: "corrected",
-      correctedData: JSON.stringify(correctedData),
-      verifiedAt: new Date(),
-      verifiedBy: adminOrError.id,
-      officialScoreId,
-    },
-  });
+    const updated = await prisma.preliminaryScore.update({
+      where: { id },
+      data: {
+        status: "corrected",
+        correctedData: JSON.stringify(correctedData),
+        verifiedAt: new Date(),
+        verifiedBy: adminOrError.id,
+        officialScoreId,
+      },
+    });
 
-  return NextResponse.json(updated);
+    return NextResponse.json(updated);
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to promote score" },
+      { status: 500 }
+    );
+  }
 }

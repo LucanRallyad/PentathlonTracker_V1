@@ -67,7 +67,7 @@ export const laserRunTimerSubmissionSchema = z.object({
   athleteId: z.string().min(1),
   overallTimeSeconds: z.number().min(0).max(3600),
   startMode: z.enum(["staggered", "mass"]),
-  handicapStartDelay: z.number().int().min(0),
+  handicapStartDelay: z.number().int().min(0).max(600),
   isPackStart: z.boolean(),
   targetPosition: z.number().int().min(1),
   wave: z.number().int().min(1),
@@ -80,7 +80,7 @@ export const laserRunTimerSubmissionSchema = z.object({
   })),
   shootTimes: z.array(z.object({
     visit: z.number().int().min(1),
-    shootTimeSeconds: z.number().min(0).max(50),
+    shootTimeSeconds: z.number().min(0).max(70),
     timedOut: z.boolean(),
   })),
 });

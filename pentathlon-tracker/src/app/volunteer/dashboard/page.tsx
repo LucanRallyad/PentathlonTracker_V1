@@ -44,53 +44,38 @@ export default function VolunteerDashboardPage() {
   const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
+    let cancelled = false;
+
     fetch("/api/volunteer/me")
-      .then((r) => r.json())
-      .then(async (data) => {
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to load volunteer info");
+        return r.json();
+      })
+      .then((data) => {
+        if (cancelled) return;
         setInfo(data);
 
-        if (data.assignment?.athleteIds) {
-          try {
-            const ids: string[] = JSON.parse(data.assignment.athleteIds);
-            const res = await fetch("/api/volunteer/me");
-            if (res.ok) {
-              // Fetch athlete details from the metadata or build from IDs
-              const athleteList = ids.map((id, i) => ({
-                id,
-                firstName: `Athlete`,
-                lastName: `${i + 1}`,
-                name: `Athlete ${i + 1}`,
-                initials: `A${i + 1}`,
-              }));
-              setAthletes(athleteList);
-            }
-          } catch {
-            // Fallback: use IDs as names
-          }
-        }
+        let athleteList: AthleteInfo[] = [];
 
-        // Parse athlete info from metadata if available
         if (data.assignment?.metadata) {
           try {
             const meta = JSON.parse(data.assignment.metadata);
             if (meta.athletes && Array.isArray(meta.athletes)) {
-              setAthletes(
-                meta.athletes.map(
-                  (a: {
-                    id: string;
-                    firstName?: string;
-                    lastName?: string;
-                    name?: string;
-                  }) => ({
-                    id: a.id,
-                    firstName: a.firstName || "",
-                    lastName: a.lastName || "",
-                    name:
-                      a.name ||
-                      `${a.firstName || ""} ${a.lastName || ""}`.trim(),
-                    initials: `${(a.firstName || "?")[0]}${(a.lastName || "?")[0]}`,
-                  }),
-                ),
+              athleteList = meta.athletes.map(
+                (a: {
+                  id: string;
+                  firstName?: string;
+                  lastName?: string;
+                  name?: string;
+                }) => ({
+                  id: a.id,
+                  firstName: a.firstName || "",
+                  lastName: a.lastName || "",
+                  name:
+                    a.name ||
+                    `${a.firstName || ""} ${a.lastName || ""}`.trim(),
+                  initials: `${(a.firstName || "?")[0]}${(a.lastName || "?")[0]}`,
+                }),
               );
             }
           } catch {
@@ -98,9 +83,29 @@ export default function VolunteerDashboardPage() {
           }
         }
 
+        if (athleteList.length === 0 && data.assignment?.athleteIds) {
+          try {
+            const ids: string[] = JSON.parse(data.assignment.athleteIds);
+            athleteList = ids.map((id, i) => ({
+              id,
+              firstName: "Athlete",
+              lastName: `${i + 1}`,
+              name: `Athlete ${i + 1}`,
+              initials: `A${i + 1}`,
+            }));
+          } catch {
+            // malformed athleteIds
+          }
+        }
+
+        setAthletes(athleteList);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => { cancelled = true; };
   }, []);
 
   const handleSubmitScore = useCallback(
@@ -224,7 +229,7 @@ export default function VolunteerDashboardPage() {
           eventName={info.assignment.event.competition.name}
           onSubmit={(data) =>
             handleSubmitScore(firstAthlete.id, {
-              finalTimeHundredths: data.finalTimeHundredths,
+              timeHundredths: data.finalTimeHundredths,
               splits: data.splits,
               lane: data.lane,
             })
@@ -241,13 +246,18 @@ export default function VolunteerDashboardPage() {
             athletes={athletes}
             eventName={info.assignment.event.competition.name}
             onSubmit={(data) => {
-              data.results.forEach((r) => {
-                handleSubmitScore(r.winner, {
+              const stats: Record<string, { victories: number; totalBouts: number }> = {};
+              athletes.forEach((a) => { stats[a.id] = { victories: 0, totalBouts: 0 }; });
+              data.results.forEach((r: { winner: string; loser: string }) => {
+                if (stats[r.winner]) { stats[r.winner].victories++; stats[r.winner].totalBouts++; }
+                if (stats[r.loser]) { stats[r.loser].totalBouts++; }
+              });
+              Object.entries(stats).forEach(([athleteId, s]) => {
+                handleSubmitScore(athleteId, {
+                  victories: s.victories,
+                  totalBouts: s.totalBouts,
                   poolName: data.poolName,
-                  opponent: r.loser,
-                  victory: true,
-                  winnerScore: r.winnerScore,
-                  loserScore: r.loserScore,
+                  rawResults: data.results,
                 });
               });
             }}
@@ -262,7 +272,7 @@ export default function VolunteerDashboardPage() {
           eventName={info.assignment.event.competition.name}
           onSubmit={(data) =>
             handleSubmitScore(data.athleteId, {
-              timeHundredths: data.timeHundredths,
+              timeSeconds: data.timeHundredths / 100,
               lane: data.lane,
             })
           }
@@ -299,12 +309,15 @@ export default function VolunteerDashboardPage() {
             handleSubmitScore(firstAthlete.id, {
               overallTimeSeconds: data.overallTimeSeconds,
               laps: data.laps,
+              shootTimes: data.shootTimes,
               totalShootTimeSeconds: data.totalShootTimeSeconds,
               totalRunTimeSeconds: data.totalRunTimeSeconds,
-              handicapDelay: data.handicapDelay,
+              handicapStartDelay: data.handicapDelay,
               startMode: data.startMode,
-              gate: data.gate,
+              gateAssignment: data.gate,
               targetPosition: data.targetPosition,
+              totalLaps: data.totalLaps,
+              wave: data.wave,
             })
           }
         />

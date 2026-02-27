@@ -42,7 +42,7 @@ export function formatLaserRunTime(totalSeconds: number): string {
 
 export function computeLaserRunAggregation(data: LaserRunTimerData): LaserRunAggregatedRecord {
   const totalShootTimeSeconds = data.shootTimes.reduce((sum, st) => sum + st.shootTimeSeconds, 0);
-  const totalRunTimeSeconds = data.overallTimeSeconds - totalShootTimeSeconds;
+  const totalRunTimeSeconds = Math.max(0, data.overallTimeSeconds - totalShootTimeSeconds);
   const adjustedTimeSeconds = data.startMode === "mass"
     ? data.overallTimeSeconds - data.handicapStartDelay
     : null;
@@ -60,7 +60,7 @@ export function computeLaserRunAggregation(data: LaserRunTimerData): LaserRunAgg
     }
 
     const runTimeSeconds = shootTimeSeconds !== null
-      ? lapTimeSeconds - shootTimeSeconds
+      ? Math.max(0, lapTimeSeconds - shootTimeSeconds)
       : lapTimeSeconds;
 
     return {

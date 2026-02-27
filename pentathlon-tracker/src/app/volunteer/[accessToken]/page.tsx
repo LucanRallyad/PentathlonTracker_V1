@@ -47,17 +47,39 @@ export default async function VolunteerEntryPage({ params }: Props) {
     );
   }
 
-  await setVolunteerSession({
-    volunteerId: volunteer.id,
-    competitionId: volunteer.competitionId,
-    name: volunteer.name,
-    role: "volunteer",
-  });
+  if (volunteer.status !== "active") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8">
+          <h1 className="text-2xl font-bold text-red-600 mb-2">Access Unavailable</h1>
+          <p className="text-gray-600">Your volunteer access is not currently active.</p>
+        </div>
+      </div>
+    );
+  }
 
-  await prisma.volunteer.update({
-    where: { id: volunteer.id },
-    data: { lastActiveAt: new Date() },
-  });
+  try {
+    await setVolunteerSession({
+      volunteerId: volunteer.id,
+      competitionId: volunteer.competitionId,
+      name: volunteer.name,
+      role: "volunteer",
+    });
+
+    await prisma.volunteer.update({
+      where: { id: volunteer.id },
+      data: { lastActiveAt: new Date() },
+    });
+  } catch {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8">
+          <h1 className="text-2xl font-bold text-red-600 mb-2">Something Went Wrong</h1>
+          <p className="text-gray-600">Unable to start your volunteer session. Please try again.</p>
+        </div>
+      </div>
+    );
+  }
 
   redirect("/volunteer/dashboard");
 }

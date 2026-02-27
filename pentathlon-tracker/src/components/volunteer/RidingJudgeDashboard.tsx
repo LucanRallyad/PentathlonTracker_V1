@@ -56,6 +56,49 @@ const PENALTY_POINTS = {
   otherPenalty: 20,
 };
 
+function CounterRow({
+  label,
+  value,
+  onInc,
+  onDec,
+  penalty,
+  color,
+}: {
+  label: string;
+  value: number;
+  onInc: () => void;
+  onDec: () => void;
+  penalty: number;
+  color: string;
+}) {
+  return (
+    <div className="flex items-center justify-between bg-gray-900 rounded-xl px-4 py-3">
+      <div>
+        <p className="font-semibold text-sm">{label}</p>
+        <p className={`text-xs ${color}`}>−{penalty} pts</p>
+      </div>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onDec}
+          disabled={value <= 0}
+          className="w-12 h-12 rounded-full bg-gray-800 active:bg-gray-700 text-xl font-bold disabled:opacity-30 min-w-[48px] min-h-[48px]"
+        >
+          −
+        </button>
+        <span className="text-2xl font-mono font-bold w-8 text-center">
+          {value}
+        </span>
+        <button
+          onClick={onInc}
+          className="w-12 h-12 rounded-full bg-gray-800 active:bg-gray-700 text-xl font-bold min-w-[48px] min-h-[48px]"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
 type TimerState = "idle" | "running" | "stopped";
 
 interface Props {
@@ -160,55 +203,6 @@ export default function RidingJudgeDashboard({
     onSubmit,
   ]);
 
-  function CounterRow({
-    label,
-    value,
-    onInc,
-    onDec,
-    penalty,
-    color,
-  }: {
-    label: string;
-    value: number;
-    onInc: () => void;
-    onDec: () => void;
-    penalty: number;
-    color: string;
-  }) {
-    return (
-      <div className="flex items-center justify-between bg-gray-900 rounded-xl px-4 py-3">
-        <div>
-          <p className="font-semibold text-sm">{label}</p>
-          <p className={`text-xs ${color}`}>−{penalty} pts</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              audio.faultBeep();
-              onDec();
-            }}
-            disabled={value <= 0}
-            className="w-12 h-12 rounded-full bg-gray-800 active:bg-gray-700 text-xl font-bold disabled:opacity-30 min-w-[48px] min-h-[48px]"
-          >
-            −
-          </button>
-          <span className="text-2xl font-mono font-bold w-8 text-center">
-            {value}
-          </span>
-          <button
-            onClick={() => {
-              audio.faultBeep();
-              onInc();
-            }}
-            className="w-12 h-12 rounded-full bg-gray-800 active:bg-gray-700 text-xl font-bold min-w-[48px] min-h-[48px]"
-          >
-            +
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   if (submitted) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-950 text-white p-6">
@@ -296,8 +290,8 @@ export default function RidingJudgeDashboard({
         <CounterRow
           label="Knockdowns"
           value={knockdowns}
-          onInc={() => setKnockdowns((v) => v + 1)}
-          onDec={() => setKnockdowns((v) => Math.max(0, v - 1))}
+          onInc={() => { audio.faultBeep(); setKnockdowns((v) => v + 1); }}
+          onDec={() => { audio.faultBeep(); setKnockdowns((v) => Math.max(0, v - 1)); }}
           penalty={knockdownPenalty}
           color="text-red-400"
         />
@@ -305,8 +299,8 @@ export default function RidingJudgeDashboard({
         <CounterRow
           label="Disobediences"
           value={disobediences}
-          onInc={() => setDisobediences((v) => v + 1)}
-          onDec={() => setDisobediences((v) => Math.max(0, v - 1))}
+          onInc={() => { audio.faultBeep(); setDisobediences((v) => v + 1); }}
+          onDec={() => { audio.faultBeep(); setDisobediences((v) => Math.max(0, v - 1)); }}
           penalty={disobediencePenalty}
           color="text-orange-400"
         />
@@ -314,8 +308,8 @@ export default function RidingJudgeDashboard({
         <CounterRow
           label="Time Over (sec)"
           value={timeOver}
-          onInc={() => setTimeOver((v) => v + 1)}
-          onDec={() => setTimeOver((v) => Math.max(0, v - 1))}
+          onInc={() => { audio.faultBeep(); setTimeOver((v) => v + 1); }}
+          onDec={() => { audio.faultBeep(); setTimeOver((v) => Math.max(0, v - 1)); }}
           penalty={timeOverPenalty}
           color="text-yellow-400"
         />
@@ -323,8 +317,8 @@ export default function RidingJudgeDashboard({
         <CounterRow
           label="Other Penalties"
           value={otherPenalties}
-          onInc={() => setOtherPenalties((v) => v + 1)}
-          onDec={() => setOtherPenalties((v) => Math.max(0, v - 1))}
+          onInc={() => { audio.faultBeep(); setOtherPenalties((v) => v + 1); }}
+          onDec={() => { audio.faultBeep(); setOtherPenalties((v) => Math.max(0, v - 1)); }}
           penalty={otherPenaltyPoints}
           color="text-purple-400"
         />
@@ -348,7 +342,7 @@ export default function RidingJudgeDashboard({
       <div className="p-4 pb-safe">
         <button
           onClick={handleConfirm}
-          disabled={timerState === "running"}
+          disabled={timerState !== "stopped"}
           className="w-full py-5 rounded-xl bg-green-600 active:bg-green-700 disabled:bg-gray-800 disabled:text-gray-600 text-white text-lg font-bold uppercase min-h-[60px]"
         >
           Confirm Score

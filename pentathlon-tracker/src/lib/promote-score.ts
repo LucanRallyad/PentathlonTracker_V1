@@ -90,31 +90,49 @@ export async function promoteScore(
     }
 
     case "laser_run": {
-      const overallTimeSeconds = data.overallTimeSeconds as number;
+      const overallTimeSeconds = data.overallTimeSeconds as number | undefined;
       const finishTimeSeconds =
-        (data.finishTimeSeconds as number) || overallTimeSeconds;
-      const penaltySeconds = (data.penaltySeconds as number) || 0;
+        (data.finishTimeSeconds as number | undefined) ?? overallTimeSeconds ?? 0;
+      const penaltySeconds = (data.penaltySeconds as number) ?? 0;
+      const handicapStartDelay = (data.handicapStartDelay as number) ?? 0;
+      const rawDelay = (data.rawDelay as number) ?? 0;
+      const isPackStart = (data.isPackStart as boolean) ?? false;
+      const startMode = (data.startMode as string) ?? "staggered";
+      const shootingStation = (data.shootingStation as number) ?? 0;
+      const gateAssignment = (data.gateAssignment as string) ?? "A";
+      const totalShootTimeSeconds = data.totalShootTimeSeconds as number | undefined;
+      const totalRunTimeSeconds = data.totalRunTimeSeconds as number | undefined;
+      const adjustedTimeSeconds = data.adjustedTimeSeconds as number | undefined;
+      const shootingDetail = data.shootingDetail as string | undefined;
+
       const calculatedPoints = calculateLaserRun({
-        finishTimeSeconds: overallTimeSeconds || finishTimeSeconds,
+        finishTimeSeconds,
+        overallTimeSeconds,
         penaltySeconds,
         ageCategory: age,
       });
+
+      const scoreData = {
+        finishTimeSeconds,
+        overallTimeSeconds: overallTimeSeconds ?? null,
+        handicapStartDelay,
+        rawDelay,
+        isPackStart,
+        startMode,
+        shootingStation,
+        gateAssignment,
+        penaltySeconds,
+        totalShootTimeSeconds: totalShootTimeSeconds ?? null,
+        totalRunTimeSeconds: totalRunTimeSeconds ?? null,
+        adjustedTimeSeconds: adjustedTimeSeconds ?? null,
+        shootingDetail: shootingDetail ?? null,
+        calculatedPoints,
+      };
+
       const score = await prisma.laserRunScore.upsert({
         where: { eventId_athleteId: { eventId, athleteId } },
-        update: {
-          finishTimeSeconds: overallTimeSeconds || finishTimeSeconds,
-          overallTimeSeconds: overallTimeSeconds || null,
-          penaltySeconds,
-          calculatedPoints,
-        },
-        create: {
-          eventId,
-          athleteId,
-          finishTimeSeconds: overallTimeSeconds || finishTimeSeconds,
-          overallTimeSeconds: overallTimeSeconds || null,
-          penaltySeconds,
-          calculatedPoints,
-        },
+        update: scoreData,
+        create: { eventId, athleteId, ...scoreData },
       });
       return score.id;
     }

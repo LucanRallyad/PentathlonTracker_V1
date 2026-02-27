@@ -36,28 +36,36 @@ export async function PATCH(
     );
   }
 
-  const results = await prisma.$transaction(
-    assignments.map((a) =>
-      prisma.volunteerAssignment.upsert({
-        where: {
-          id: a.volunteerId + "_" + a.eventId,
-        },
-        update: {
-          role: a.role,
-          athleteIds: a.athleteIds ? JSON.stringify(a.athleteIds) : null,
-          metadata: a.metadata ? JSON.stringify(a.metadata) : null,
-        },
-        create: {
+  const results = [];
+  for (const a of assignments) {
+    const data = {
+      role: a.role,
+      athleteIds: a.athleteIds ? JSON.stringify(a.athleteIds) : null,
+      metadata: a.metadata ? JSON.stringify(a.metadata) : null,
+    };
+
+    const existing = await prisma.volunteerAssignment.findFirst({
+      where: { volunteerId: a.volunteerId, eventId: a.eventId },
+    });
+
+    if (existing) {
+      const updated = await prisma.volunteerAssignment.update({
+        where: { id: existing.id },
+        data,
+      });
+      results.push(updated);
+    } else {
+      const created = await prisma.volunteerAssignment.create({
+        data: {
           volunteerId: a.volunteerId,
           eventId: a.eventId,
-          role: a.role,
-          athleteIds: a.athleteIds ? JSON.stringify(a.athleteIds) : null,
-          metadata: a.metadata ? JSON.stringify(a.metadata) : null,
+          ...data,
           assignedBy: adminOrError.id,
         },
-      })
-    )
-  );
+      });
+      results.push(created);
+    }
+  }
 
   return NextResponse.json(results);
 }

@@ -75,8 +75,10 @@ interface PreliminaryScore {
 interface ProposedAssignment {
   volunteerId: string;
   volunteerName: string;
+  eventId: string;
   role: string;
   athleteIds: string[] | null;
+  metadata: Record<string, unknown> | null;
 }
 
 const DISCIPLINE_LABELS: Record<string, string> = {
@@ -222,7 +224,7 @@ export default function VolunteersPage() {
 
       if (res.ok) {
         const vol = await res.json();
-        setVolunteers((prev) => [...prev, vol]);
+        setVolunteers((prev) => [...prev, { ...vol, assignments: vol.assignments || [] }]);
         setAddForm({ name: "", email: "", phone: "" });
         setShowAddModal(false);
       } else {
@@ -314,7 +316,7 @@ export default function VolunteersPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setProposedAssignments(data.assignments || []);
+        setProposedAssignments(data.proposed || []);
       } else {
         const data = await res.json();
         setAutoAssignError(data.error || "Auto-assign failed.");
@@ -386,7 +388,7 @@ export default function VolunteersPage() {
       const res = await fetch(`/api/preliminary-scores/${scoreId}/reject`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason: rejectionReason || undefined }),
+        body: JSON.stringify({ reason: rejectionReason.trim() }),
       });
       if (res.ok) {
         setPreliminaryScores((prev) =>
@@ -993,7 +995,7 @@ export default function VolunteersPage() {
             <h3 className="text-base font-semibold text-[#37352F] mb-3">Reject Score</h3>
             <div>
               <label className="block text-xs font-medium text-[#787774] mb-1">
-                Reason (optional)
+                Reason <span className="text-[#E03E3E]">*</span>
               </label>
               <textarea
                 value={rejectionReason}
@@ -1007,7 +1009,7 @@ export default function VolunteersPage() {
             <div className="flex items-center gap-3 mt-4">
               <button
                 onClick={() => rejectScore(showRejectModal)}
-                disabled={rejectingId === showRejectModal}
+                disabled={rejectingId === showRejectModal || !rejectionReason.trim()}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#E03E3E] rounded-[3px] hover:bg-[#c83535] transition-colors disabled:opacity-50"
               >
                 {rejectingId === showRejectModal ? (

@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin, isErrorResponse } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { calculateLaserRun } from "@/lib/scoring/laser-run";
 import type { AgeCategory } from "@/lib/scoring/types";
-
-function isErrorResponse(v: unknown): v is NextResponse {
-  return v instanceof NextResponse;
-}
 
 interface LapData {
   lapNumber: number;

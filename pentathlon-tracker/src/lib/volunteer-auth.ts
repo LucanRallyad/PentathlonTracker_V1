@@ -29,7 +29,6 @@ export async function getVolunteerSession(): Promise<VolunteerSession | null> {
 
     const volunteer = await prisma.volunteer.findUnique({
       where: { id: session.volunteerId },
-      include: { competition: true },
     });
 
     if (!volunteer || volunteer.status !== "active") return null;

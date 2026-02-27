@@ -79,6 +79,7 @@ export default function ObstacleTimerDashboard({
     { athleteId: string; name: string; time: number }[]
   >([]);
   const startTimeRef = useRef(0);
+  const pausedAtRef = useRef(0);
   const rafRef = useRef<number>(0);
   const audio = useAudioFeedback();
 
@@ -110,10 +111,13 @@ export default function ObstacleTimerDashboard({
   const handleStop = useCallback(() => {
     audio.stopBeep();
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    pausedAtRef.current = performance.now();
     setState("stopped");
   }, [audio]);
 
   const handleCancel = useCallback(() => {
+    const pauseDuration = performance.now() - pausedAtRef.current;
+    startTimeRef.current += pauseDuration;
     setState("running");
     rafRef.current = requestAnimationFrame(tick);
   }, [tick]);

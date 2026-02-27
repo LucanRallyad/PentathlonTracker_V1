@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin, isErrorResponse } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
-function isErrorResponse(v: unknown): v is NextResponse {
-  return v instanceof NextResponse;
-}
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const adminOrError = await requireAdmin(req);
