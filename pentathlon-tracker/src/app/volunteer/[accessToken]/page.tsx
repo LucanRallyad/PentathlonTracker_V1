@@ -16,10 +16,10 @@ export default async function VolunteerEntryPage({ params }: Props) {
 
   if (!volunteer) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center p-8">
-          <h1 className="text-2xl font-bold text-red-600 mb-2">Invalid Link</h1>
-          <p className="text-gray-600">This volunteer access link is not valid.</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#FBFBFA]">
+        <div className="text-center p-8 bg-white rounded-[4px] border border-[#E9E9E7] mx-4 max-w-sm w-full">
+          <h1 className="text-xl font-semibold text-[#E03E3E] mb-2">Invalid Link</h1>
+          <p className="text-sm text-[#787774]">This volunteer access link is not valid.</p>
         </div>
       </div>
     );
@@ -27,10 +27,10 @@ export default async function VolunteerEntryPage({ params }: Props) {
 
   if (volunteer.status === "revoked") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center p-8">
-          <h1 className="text-2xl font-bold text-red-600 mb-2">Access Revoked</h1>
-          <p className="text-gray-600">Your volunteer access has been revoked by an administrator.</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#FBFBFA]">
+        <div className="text-center p-8 bg-white rounded-[4px] border border-[#E9E9E7] mx-4 max-w-sm w-full">
+          <h1 className="text-xl font-semibold text-[#E03E3E] mb-2">Access Revoked</h1>
+          <p className="text-sm text-[#787774]">Your volunteer access has been revoked by an administrator.</p>
         </div>
       </div>
     );
@@ -38,10 +38,10 @@ export default async function VolunteerEntryPage({ params }: Props) {
 
   if (new Date() > volunteer.expiresAt) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center p-8">
-          <h1 className="text-2xl font-bold text-amber-600 mb-2">Competition Ended</h1>
-          <p className="text-gray-600">This competition has ended and volunteer access has expired.</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#FBFBFA]">
+        <div className="text-center p-8 bg-white rounded-[4px] border border-[#E9E9E7] mx-4 max-w-sm w-full">
+          <h1 className="text-xl font-semibold text-[#D9730D] mb-2">Competition Ended</h1>
+          <p className="text-sm text-[#787774]">This competition has ended and volunteer access has expired.</p>
         </div>
       </div>
     );
@@ -49,10 +49,10 @@ export default async function VolunteerEntryPage({ params }: Props) {
 
   if (volunteer.status !== "active") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center p-8">
-          <h1 className="text-2xl font-bold text-red-600 mb-2">Access Unavailable</h1>
-          <p className="text-gray-600">Your volunteer access is not currently active.</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#FBFBFA]">
+        <div className="text-center p-8 bg-white rounded-[4px] border border-[#E9E9E7] mx-4 max-w-sm w-full">
+          <h1 className="text-xl font-semibold text-[#E03E3E] mb-2">Access Unavailable</h1>
+          <p className="text-sm text-[#787774]">Your volunteer access is not currently active.</p>
         </div>
       </div>
     );
@@ -72,10 +72,10 @@ export default async function VolunteerEntryPage({ params }: Props) {
     });
   } catch {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center p-8">
-          <h1 className="text-2xl font-bold text-red-600 mb-2">Something Went Wrong</h1>
-          <p className="text-gray-600">Unable to start your volunteer session. Please try again.</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#FBFBFA]">
+        <div className="text-center p-8 bg-white rounded-[4px] border border-[#E9E9E7] mx-4 max-w-sm w-full">
+          <h1 className="text-xl font-semibold text-[#E03E3E] mb-2">Something Went Wrong</h1>
+          <p className="text-sm text-[#787774]">Unable to start your volunteer session. Please try again.</p>
         </div>
       </div>
     );

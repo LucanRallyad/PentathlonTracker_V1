@@ -146,26 +146,30 @@ export default function ObstacleTimerDashboard({
 
   if (allDone) {
     return (
-      <div className="flex flex-col min-h-screen bg-gray-950 text-white">
-        <header className="bg-gray-900 px-4 py-3 border-b border-gray-800">
-          <p className="font-bold text-lg">{laneName}</p>
-          <p className="text-xs text-gray-400">{eventName}</p>
+      <div className="flex flex-col min-h-screen bg-[#FBFBFA] text-[#37352F]">
+        <header className="bg-white px-4 py-3 border-b border-[#E9E9E7]">
+          <p className="font-semibold text-base">{laneName}</p>
+          <p className="text-xs text-[#9B9A97]">{eventName}</p>
         </header>
         <div className="flex-1 flex flex-col items-center justify-center p-6">
-          <div className="text-green-400 text-6xl mb-4">✓</div>
-          <h2 className="text-xl font-bold mb-4">Lane Complete</h2>
-          <div className="w-full space-y-2">
-            {completedResults.map((r, i) => (
-              <div
-                key={r.athleteId}
-                className="flex justify-between bg-gray-900 rounded-lg px-4 py-2"
-              >
-                <span className="text-gray-400">
-                  {i + 1}. {r.name}
-                </span>
-                <span className="font-mono">{formatTime(r.time)}</span>
-              </div>
-            ))}
+          <div className="bg-white rounded-[4px] border border-[#E9E9E7] p-6 text-center w-full max-w-sm">
+            <div className="w-12 h-12 rounded-full bg-[#DDEDEA] flex items-center justify-center mx-auto mb-4">
+              <span className="text-[#0F7B6C] text-2xl font-bold">&#10003;</span>
+            </div>
+            <h2 className="text-lg font-semibold mb-4">Lane Complete</h2>
+            <div className="space-y-2">
+              {completedResults.map((r, i) => (
+                <div
+                  key={r.athleteId}
+                  className="flex justify-between bg-[#F7F6F3] rounded-[4px] px-4 py-2"
+                >
+                  <span className="text-[#787774] text-sm">
+                    {i + 1}. {r.name}
+                  </span>
+                  <span className="font-mono text-sm text-[#37352F]">{formatTime(r.time)}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -173,16 +177,16 @@ export default function ObstacleTimerDashboard({
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-950 text-white">
+    <div className="flex flex-col min-h-screen bg-[#FBFBFA] text-[#37352F]">
       {/* Header */}
-      <header className="bg-gray-900 px-4 py-3 border-b border-gray-800">
+      <header className="bg-white px-4 py-3 border-b border-[#E9E9E7]">
         <div className="flex items-center justify-between">
-          <div className="bg-orange-600 text-white font-bold text-lg px-3 py-1 rounded">
+          <div className="bg-[#FAEBDD] text-[#D9730D] font-semibold text-sm px-3 py-1 rounded-[3px]">
             {laneName}
           </div>
           <div className="text-right">
-            <p className="text-xs text-gray-400">{eventName}</p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-[#9B9A97]">{eventName}</p>
+            <p className="text-xs text-[#787774]">
               {currentIndex + 1} of {athletes.length}
             </p>
           </div>
@@ -191,7 +195,7 @@ export default function ObstacleTimerDashboard({
 
       {/* Current Athlete */}
       <div className="px-4 pt-4">
-        <p className="text-center text-lg font-semibold">
+        <p className="text-center text-base font-semibold text-[#37352F]">
           {currentAthlete?.name}
         </p>
       </div>
@@ -201,24 +205,24 @@ export default function ObstacleTimerDashboard({
         <div
           className={`font-mono font-bold tracking-wider transition-colors ${
             state === "running"
-              ? "text-green-400"
+              ? "text-[#0F7B6C]"
               : state === "stopped"
-                ? "text-red-400"
+                ? "text-[#E03E3E]"
                 : state === "confirmed"
-                  ? "text-blue-400"
-                  : "text-white"
+                  ? "text-[#0B6E99]"
+                  : "text-[#37352F]"
           }`}
           style={{ fontSize: "clamp(48px, 14vw, 80px)" }}
         >
           {formatTime(elapsed)}
         </div>
         {state === "stopped" && (
-          <p className="text-xs text-red-400 mt-1 uppercase tracking-widest">
+          <p className="text-xs text-[#E03E3E] mt-1 uppercase tracking-widest font-medium">
             Stopped — Confirm?
           </p>
         )}
         {state === "confirmed" && (
-          <p className="text-xs text-blue-400 mt-1 uppercase tracking-widest">
+          <p className="text-xs text-[#0B6E99] mt-1 uppercase tracking-widest font-medium">
             Recorded
           </p>
         )}
@@ -227,9 +231,9 @@ export default function ObstacleTimerDashboard({
       {/* Next Up Preview */}
       {nextAthlete && state !== "running" && (
         <div className="px-4 pb-2">
-          <div className="bg-gray-900 rounded-lg px-4 py-2 flex items-center justify-between">
-            <span className="text-xs text-gray-500 uppercase">Next up</span>
-            <span className="text-sm text-gray-300">{nextAthlete.name}</span>
+          <div className="bg-white rounded-[4px] border border-[#E9E9E7] px-4 py-2 flex items-center justify-between">
+            <span className="text-xs text-[#9B9A97] uppercase">Next up</span>
+            <span className="text-sm text-[#37352F]">{nextAthlete.name}</span>
           </div>
         </div>
       )}
@@ -239,7 +243,7 @@ export default function ObstacleTimerDashboard({
         {state === "idle" && (
           <button
             onClick={handleStart}
-            className="w-full py-5 rounded-xl bg-green-600 active:bg-green-700 text-white text-xl font-bold uppercase tracking-wider min-h-[60px]"
+            className="w-full py-4 rounded-[4px] bg-[#0F7B6C] active:bg-[#0a6358] text-white text-lg font-semibold uppercase tracking-wider min-h-[56px]"
           >
             Start
           </button>
@@ -248,7 +252,7 @@ export default function ObstacleTimerDashboard({
         {state === "running" && (
           <button
             onClick={handleStop}
-            className="w-full py-5 rounded-xl bg-red-600 active:bg-red-700 text-white text-xl font-bold uppercase tracking-wider min-h-[60px]"
+            className="w-full py-4 rounded-[4px] bg-[#E03E3E] active:bg-[#c43333] text-white text-lg font-semibold uppercase tracking-wider min-h-[56px]"
           >
             Stop
           </button>
@@ -258,13 +262,13 @@ export default function ObstacleTimerDashboard({
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={handleCancel}
-              className="py-5 rounded-xl bg-gray-700 active:bg-gray-600 text-white text-lg font-bold uppercase min-h-[60px]"
+              className="py-4 rounded-[4px] bg-[#F7F6F3] active:bg-[#E8E7E4] text-[#37352F] border border-[#E9E9E7] text-base font-semibold uppercase min-h-[56px]"
             >
               Cancel
             </button>
             <button
               onClick={handleConfirm}
-              className="py-5 rounded-xl bg-green-600 active:bg-green-700 text-white text-lg font-bold uppercase min-h-[60px]"
+              className="py-4 rounded-[4px] bg-[#0F7B6C] active:bg-[#0a6358] text-white text-base font-semibold uppercase min-h-[56px]"
             >
               Confirm
             </button>
@@ -274,9 +278,9 @@ export default function ObstacleTimerDashboard({
         {state === "confirmed" && (
           <button
             onClick={handleNext}
-            className="w-full py-5 rounded-xl bg-blue-600 active:bg-blue-700 text-white text-xl font-bold uppercase tracking-wider min-h-[60px]"
+            className="w-full py-4 rounded-[4px] bg-[#0B6E99] active:bg-[#095a7d] text-white text-lg font-semibold uppercase tracking-wider min-h-[56px]"
           >
-            Next Athlete →
+            Next Athlete &#8594;
           </button>
         )}
       </div>
@@ -284,18 +288,18 @@ export default function ObstacleTimerDashboard({
       {/* Completed List */}
       {completedResults.length > 0 && (
         <div className="px-4 pb-4 max-h-28 overflow-y-auto">
-          <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">
+          <p className="text-xs text-[#9B9A97] uppercase tracking-wider mb-1">
             Completed
           </p>
           {completedResults.map((r, i) => (
             <div
               key={r.athleteId}
-              className="flex justify-between text-sm font-mono bg-gray-900 rounded px-3 py-1 mb-1"
+              className="flex justify-between text-sm font-mono bg-white rounded-[4px] border border-[#E9E9E7] px-3 py-1.5 mb-1"
             >
-              <span className="text-gray-400">
+              <span className="text-[#787774]">
                 {i + 1}. {r.name}
               </span>
-              <span>{formatTime(r.time)}</span>
+              <span className="text-[#37352F]">{formatTime(r.time)}</span>
             </div>
           ))}
         </div>

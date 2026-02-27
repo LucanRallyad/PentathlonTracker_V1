@@ -252,22 +252,22 @@ export default function LaserRunTimerDashboard({
   const isShooting = mainState === "running" && shooting;
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-950 text-white">
+    <div className="flex flex-col min-h-screen bg-[#FBFBFA] text-[#37352F]">
       {/* Header */}
-      <header className="bg-gray-900 px-4 py-3 border-b border-gray-800">
+      <header className="bg-white px-4 py-3 border-b border-[#E9E9E7]">
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-bold text-base truncate max-w-[200px]">
+            <p className="font-semibold text-sm truncate max-w-[200px] text-[#37352F]">
               {athleteName}
             </p>
-            <p className="text-xs text-gray-400">{eventName}</p>
+            <p className="text-xs text-[#9B9A97]">{eventName}</p>
           </div>
           <div className="text-right text-xs space-y-0.5">
-            <p className="text-gray-400">
+            <p className="text-[#787774]">
               Wave {wave} · Gate {gate} · T{targetPosition}
             </p>
             {startMode === "staggered" && handicapDelay > 0 && (
-              <p className="text-amber-400">
+              <p className="text-[#D9730D] font-medium">
                 Handicap: +{handicapDelay}s
               </p>
             )}
@@ -281,13 +281,13 @@ export default function LaserRunTimerDashboard({
           className={`font-mono font-bold tracking-wider transition-colors ${
             mainState === "running"
               ? shooting
-                ? "text-orange-400"
-                : "text-green-400"
+                ? "text-[#D9730D]"
+                : "text-[#0F7B6C]"
               : mainState === "stopped"
-                ? "text-red-400"
+                ? "text-[#E03E3E]"
                 : mainState === "confirmed"
-                  ? "text-blue-400"
-                  : "text-white"
+                  ? "text-[#0B6E99]"
+                  : "text-[#37352F]"
           }`}
           style={{ fontSize: "clamp(42px, 12vw, 72px)" }}
         >
@@ -295,22 +295,22 @@ export default function LaserRunTimerDashboard({
         </div>
 
         {/* Lap Counter */}
-        <p className="text-sm text-gray-400 mt-2">
+        <p className="text-sm text-[#787774] mt-2">
           Lap {Math.min(currentLap, totalLaps)} of {totalLaps}
         </p>
 
         {/* Shoot Sub-Timer (inline) */}
         {isShooting && (
-          <div className="mt-4 bg-orange-900/30 border border-orange-700/50 rounded-xl px-6 py-3 text-center">
-            <p className="text-xs text-orange-400 uppercase tracking-wider mb-1">
+          <div className="mt-4 bg-[#FAEBDD] border border-[#D9730D]/20 rounded-[4px] px-6 py-3 text-center">
+            <p className="text-xs text-[#D9730D] uppercase tracking-wider mb-1 font-medium">
               Shooting
             </p>
-            <p className="text-3xl font-mono font-bold text-orange-300">
+            <p className="text-3xl font-mono font-bold text-[#D9730D]">
               {shootElapsed.toFixed(1)}s
             </p>
-            <div className="w-full bg-gray-800 rounded-full h-1.5 mt-2">
+            <div className="w-full bg-[#E9E9E7] rounded-full h-1.5 mt-2">
               <div
-                className="bg-orange-500 h-1.5 rounded-full transition-all"
+                className="bg-[#D9730D] h-1.5 rounded-full transition-all"
                 style={{
                   width: `${Math.min((shootElapsed / SHOOT_MAX_SECONDS) * 100, 100)}%`,
                 }}
@@ -320,12 +320,12 @@ export default function LaserRunTimerDashboard({
         )}
 
         {mainState === "stopped" && (
-          <p className="text-xs text-red-400 mt-2 uppercase tracking-widest">
+          <p className="text-xs text-[#E03E3E] mt-2 uppercase tracking-widest font-medium">
             Stopped — Confirm?
           </p>
         )}
         {mainState === "confirmed" && (
-          <p className="text-xs text-blue-400 mt-2 uppercase tracking-widest">
+          <p className="text-xs text-[#0B6E99] mt-2 uppercase tracking-widest font-medium">
             Submitted
           </p>
         )}
@@ -334,7 +334,7 @@ export default function LaserRunTimerDashboard({
       {/* Lap Splits */}
       {laps.length > 0 && mainState !== "confirmed" && (
         <div className="px-4 pb-2 max-h-28 overflow-y-auto">
-          <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">
+          <p className="text-xs text-[#9B9A97] uppercase tracking-wider mb-1">
             Lap Splits
           </p>
           <div className="space-y-1">
@@ -343,10 +343,10 @@ export default function LaserRunTimerDashboard({
               .map((l, i) => (
                 <div
                   key={i}
-                  className="flex justify-between text-sm font-mono bg-gray-900 rounded px-3 py-1"
+                  className="flex justify-between text-sm font-mono bg-white rounded-[4px] border border-[#E9E9E7] px-3 py-1.5"
                 >
-                  <span className="text-gray-400">Lap {l.lapNumber}</span>
-                  <span>{formatTimeSeconds(l.splitSeconds)}</span>
+                  <span className="text-[#787774]">Lap {l.lapNumber}</span>
+                  <span className="text-[#37352F]">{formatTimeSeconds(l.splitSeconds)}</span>
                 </div>
               ))}
           </div>
@@ -358,7 +358,7 @@ export default function LaserRunTimerDashboard({
         {mainState === "idle" && (
           <button
             onClick={handleStart}
-            className="w-full py-5 rounded-xl bg-green-600 active:bg-green-700 text-white text-xl font-bold uppercase tracking-wider min-h-[60px]"
+            className="w-full py-4 rounded-[4px] bg-[#0F7B6C] active:bg-[#0a6358] text-white text-lg font-semibold uppercase tracking-wider min-h-[56px]"
           >
             Start
           </button>
@@ -369,20 +369,20 @@ export default function LaserRunTimerDashboard({
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={handleRunLap}
-                className="py-5 rounded-xl bg-blue-600 active:bg-blue-700 text-white text-lg font-bold uppercase min-h-[60px]"
+                className="py-4 rounded-[4px] bg-[#0B6E99] active:bg-[#095a7d] text-white text-base font-semibold uppercase min-h-[56px]"
               >
                 Run Lap
               </button>
               <button
                 onClick={handleShootLap}
-                className="py-5 rounded-xl bg-orange-500 active:bg-orange-600 text-white text-lg font-bold uppercase min-h-[60px]"
+                className="py-4 rounded-[4px] bg-[#D9730D] active:bg-[#c46509] text-white text-base font-semibold uppercase min-h-[56px]"
               >
                 Shoot Lap
               </button>
             </div>
             <button
               onClick={handleStop}
-              className="w-full py-4 rounded-xl bg-red-600 active:bg-red-700 text-white text-lg font-bold uppercase min-h-[56px]"
+              className="w-full py-3.5 rounded-[4px] bg-[#E03E3E] active:bg-[#c43333] text-white text-base font-semibold uppercase min-h-[48px]"
             >
               Stop
             </button>
@@ -392,7 +392,7 @@ export default function LaserRunTimerDashboard({
         {isShooting && (
           <button
             onClick={handleStopShoot}
-            className="w-full py-5 rounded-xl bg-orange-600 active:bg-orange-700 text-white text-xl font-bold uppercase tracking-wider min-h-[60px] animate-pulse"
+            className="w-full py-4 rounded-[4px] bg-[#D9730D] active:bg-[#c46509] text-white text-lg font-semibold uppercase tracking-wider min-h-[56px] animate-pulse"
           >
             Stop Shoot
           </button>
@@ -402,13 +402,13 @@ export default function LaserRunTimerDashboard({
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={handleCancel}
-              className="py-5 rounded-xl bg-gray-700 active:bg-gray-600 text-white text-lg font-bold uppercase min-h-[60px]"
+              className="py-4 rounded-[4px] bg-[#F7F6F3] active:bg-[#E8E7E4] text-[#37352F] border border-[#E9E9E7] text-base font-semibold uppercase min-h-[56px]"
             >
               Cancel
             </button>
             <button
               onClick={handleConfirm}
-              className="py-5 rounded-xl bg-green-600 active:bg-green-700 text-white text-lg font-bold uppercase min-h-[60px]"
+              className="py-4 rounded-[4px] bg-[#0F7B6C] active:bg-[#0a6358] text-white text-base font-semibold uppercase min-h-[56px]"
             >
               Confirm
             </button>
@@ -416,8 +416,8 @@ export default function LaserRunTimerDashboard({
         )}
 
         {mainState === "confirmed" && (
-          <div className="bg-gray-900 rounded-xl p-4 text-center">
-            <p className="text-sm text-gray-400">Score submitted</p>
+          <div className="bg-white rounded-[4px] border border-[#E9E9E7] p-4 text-center">
+            <p className="text-sm text-[#787774]">Score submitted</p>
           </div>
         )}
       </div>

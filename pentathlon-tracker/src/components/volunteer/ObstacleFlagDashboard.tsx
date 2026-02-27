@@ -120,36 +120,40 @@ export default function ObstacleFlagDashboard({
 
   if (allDone) {
     return (
-      <div className="flex flex-col min-h-screen bg-gray-950 text-white">
-        <header className="bg-gray-900 px-4 py-3 border-b border-gray-800">
-          <p className="font-bold text-lg">Flagger</p>
-          <p className="text-xs text-gray-400">{eventName}</p>
+      <div className="flex flex-col min-h-screen bg-[#FBFBFA] text-[#37352F]">
+        <header className="bg-white px-4 py-3 border-b border-[#E9E9E7]">
+          <p className="font-semibold text-base">Flagger</p>
+          <p className="text-xs text-[#9B9A97]">{eventName}</p>
         </header>
         <div className="flex-1 flex flex-col items-center justify-center p-6">
-          <div className="text-green-400 text-6xl mb-4">✓</div>
-          <h2 className="text-xl font-bold mb-4">All Athletes Flagged</h2>
-          <div className="w-full space-y-2">
-            {completedResults.map((r, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between bg-gray-900 rounded-lg px-4 py-2"
-              >
-                <span className="text-gray-400">
-                  {i + 1}. {r.name}
-                </span>
-                <div className="flex gap-3 text-sm">
-                  {r.yellow > 0 && (
-                    <span className="text-yellow-400">🟡 {r.yellow}</span>
-                  )}
-                  {r.red > 0 && (
-                    <span className="text-red-400">🔴 {r.red}</span>
-                  )}
-                  {r.yellow === 0 && r.red === 0 && (
-                    <span className="text-green-400">Clean</span>
-                  )}
+          <div className="bg-white rounded-[4px] border border-[#E9E9E7] p-6 text-center w-full max-w-sm">
+            <div className="w-12 h-12 rounded-full bg-[#DDEDEA] flex items-center justify-center mx-auto mb-4">
+              <span className="text-[#0F7B6C] text-2xl font-bold">&#10003;</span>
+            </div>
+            <h2 className="text-lg font-semibold mb-4">All Athletes Flagged</h2>
+            <div className="space-y-2">
+              {completedResults.map((r, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between bg-[#F7F6F3] rounded-[4px] px-4 py-2"
+                >
+                  <span className="text-[#787774] text-sm">
+                    {i + 1}. {r.name}
+                  </span>
+                  <div className="flex gap-3 text-sm">
+                    {r.yellow > 0 && (
+                      <span className="text-[#DFAB01] font-medium">{r.yellow} yellow</span>
+                    )}
+                    {r.red > 0 && (
+                      <span className="text-[#E03E3E] font-medium">{r.red} red</span>
+                    )}
+                    {r.yellow === 0 && r.red === 0 && (
+                      <span className="text-[#0F7B6C] font-medium">Clean</span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -157,15 +161,15 @@ export default function ObstacleFlagDashboard({
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-950 text-white">
+    <div className="flex flex-col min-h-screen bg-[#FBFBFA] text-[#37352F]">
       {/* Header */}
-      <header className="bg-gray-900 px-4 py-3 border-b border-gray-800">
+      <header className="bg-white px-4 py-3 border-b border-[#E9E9E7]">
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-bold text-lg">Flagger</p>
-            <p className="text-xs text-gray-400">{eventName}</p>
+            <p className="font-semibold text-base">Flagger</p>
+            <p className="text-xs text-[#9B9A97]">{eventName}</p>
           </div>
-          <div className="text-right text-xs text-gray-500">
+          <div className="text-right text-xs text-[#787774]">
             {currentIndex + 1} of {athletes.length}
           </div>
         </div>
@@ -173,7 +177,7 @@ export default function ObstacleFlagDashboard({
 
       {/* Current Athlete */}
       <div className="px-4 pt-6 pb-4 text-center">
-        <p className="text-xl font-bold">{currentAthlete?.name}</p>
+        <p className="text-lg font-semibold text-[#37352F]">{currentAthlete?.name}</p>
       </div>
 
       {/* Confirm Athlete Gate */}
@@ -184,7 +188,7 @@ export default function ObstacleFlagDashboard({
               audio.next();
               setAthleteConfirmed(true);
             }}
-            className="w-full py-6 rounded-xl bg-blue-600 active:bg-blue-700 text-white text-xl font-bold uppercase min-h-[60px]"
+            className="w-full py-5 rounded-[4px] bg-[#0B6E99] active:bg-[#095a7d] text-white text-lg font-semibold uppercase min-h-[56px]"
           >
             Confirm Athlete Ready
           </button>
@@ -196,17 +200,17 @@ export default function ObstacleFlagDashboard({
         <>
           {/* Flag Counters */}
           <div className="px-4 grid grid-cols-2 gap-4 mb-4">
-            <div className="bg-yellow-900/30 border border-yellow-700/50 rounded-xl p-4 text-center">
-              <p className="text-yellow-400 text-4xl font-bold font-mono">
+            <div className="bg-[#FBF3DB] border border-[#DFAB01]/20 rounded-[4px] p-4 text-center">
+              <p className="text-[#DFAB01] text-4xl font-bold font-mono">
                 {yellowCount}
               </p>
-              <p className="text-yellow-500 text-xs uppercase mt-1">Yellow</p>
+              <p className="text-[#DFAB01]/80 text-xs uppercase mt-1 font-medium">Yellow</p>
             </div>
-            <div className="bg-red-900/30 border border-red-700/50 rounded-xl p-4 text-center">
-              <p className="text-red-400 text-4xl font-bold font-mono">
+            <div className="bg-[#FBE4E4] border border-[#E03E3E]/20 rounded-[4px] p-4 text-center">
+              <p className="text-[#E03E3E] text-4xl font-bold font-mono">
                 {redCount}
               </p>
-              <p className="text-red-500 text-xs uppercase mt-1">Red</p>
+              <p className="text-[#E03E3E]/80 text-xs uppercase mt-1 font-medium">Red</p>
             </div>
           </div>
 
@@ -214,13 +218,13 @@ export default function ObstacleFlagDashboard({
           <div className="px-4 grid grid-cols-2 gap-3 mb-4">
             <button
               onClick={handleYellow}
-              className="py-6 rounded-xl bg-yellow-500 active:bg-yellow-600 text-black text-lg font-bold uppercase min-h-[60px]"
+              className="py-5 rounded-[4px] bg-[#DFAB01] active:bg-[#c49800] text-white text-base font-semibold uppercase min-h-[56px]"
             >
               Yellow Flag
             </button>
             <button
               onClick={handleRed}
-              className="py-6 rounded-xl bg-red-600 active:bg-red-700 text-white text-lg font-bold uppercase min-h-[60px]"
+              className="py-5 rounded-[4px] bg-[#E03E3E] active:bg-[#c43333] text-white text-base font-semibold uppercase min-h-[56px]"
             >
               Red Flag
             </button>
@@ -229,21 +233,21 @@ export default function ObstacleFlagDashboard({
           {/* Flag Log */}
           {flagLog.length > 0 && (
             <div className="px-4 mb-4 max-h-28 overflow-y-auto">
-              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">
+              <p className="text-xs text-[#9B9A97] uppercase tracking-wider mb-1">
                 Flag Log
               </p>
               <div className="space-y-1">
                 {flagLog.map((entry, i) => (
                   <div
                     key={i}
-                    className={`text-sm px-3 py-1 rounded ${
+                    className={`text-sm px-3 py-1.5 rounded-[4px] border ${
                       entry.type === "yellow"
-                        ? "bg-yellow-900/20 text-yellow-400"
-                        : "bg-red-900/20 text-red-400"
+                        ? "bg-[#FBF3DB] text-[#DFAB01] border-[#DFAB01]/20"
+                        : "bg-[#FBE4E4] text-[#E03E3E] border-[#E03E3E]/20"
                     }`}
                   >
-                    {entry.type === "yellow" ? "🟡 Yellow" : "🔴 Red"} Flag
-                    <span className="text-gray-600 ml-2 text-xs">
+                    {entry.type === "yellow" ? "Yellow" : "Red"} Flag
+                    <span className="text-[#9B9A97] ml-2 text-xs">
                       {new Date(entry.timestamp).toLocaleTimeString()}
                     </span>
                   </div>
@@ -256,7 +260,7 @@ export default function ObstacleFlagDashboard({
           <div className="mt-auto p-4 pb-safe">
             <button
               onClick={handleSubmitAndNext}
-              className="w-full py-5 rounded-xl bg-green-600 active:bg-green-700 text-white text-lg font-bold uppercase min-h-[60px]"
+              className="w-full py-4 rounded-[4px] bg-[#0F7B6C] active:bg-[#0a6358] text-white text-base font-semibold uppercase min-h-[56px]"
             >
               Submit & Next
             </button>
@@ -267,17 +271,21 @@ export default function ObstacleFlagDashboard({
       {/* Post-Submit */}
       {submitted && (
         <div className="flex-1 flex flex-col items-center justify-center px-4">
-          <div className="text-green-400 text-5xl mb-3">✓</div>
-          <p className="text-lg font-semibold mb-1">Recorded</p>
-          <p className="text-sm text-gray-400 mb-6">
-            {yellowCount} yellow, {redCount} red
-          </p>
-          <button
-            onClick={handleNext}
-            className="w-full py-5 rounded-xl bg-blue-600 active:bg-blue-700 text-white text-xl font-bold uppercase min-h-[60px]"
-          >
-            Next Athlete →
-          </button>
+          <div className="bg-white rounded-[4px] border border-[#E9E9E7] p-6 text-center w-full max-w-sm">
+            <div className="w-12 h-12 rounded-full bg-[#DDEDEA] flex items-center justify-center mx-auto mb-3">
+              <span className="text-[#0F7B6C] text-2xl font-bold">&#10003;</span>
+            </div>
+            <p className="text-base font-semibold mb-1">Recorded</p>
+            <p className="text-sm text-[#787774] mb-6">
+              {yellowCount} yellow, {redCount} red
+            </p>
+            <button
+              onClick={handleNext}
+              className="w-full py-4 rounded-[4px] bg-[#0B6E99] active:bg-[#095a7d] text-white text-lg font-semibold uppercase min-h-[56px]"
+            >
+              Next Athlete &#8594;
+            </button>
+          </div>
         </div>
       )}
     </div>

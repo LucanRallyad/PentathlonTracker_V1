@@ -246,32 +246,36 @@ export default function FencingRankingDashboard({
 
   if (submitted) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-950 text-white p-6">
-        <div className="text-green-400 text-6xl mb-4">✓</div>
-        <h2 className="text-xl font-bold mb-2">Pool Submitted</h2>
-        <p className="text-gray-400 text-sm">{poolName} — {completedCount} bouts recorded</p>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#FBFBFA] text-[#37352F] p-6">
+        <div className="bg-white rounded-[4px] border border-[#E9E9E7] p-8 text-center max-w-sm w-full">
+          <div className="w-12 h-12 rounded-full bg-[#DDEDEA] flex items-center justify-center mx-auto mb-4">
+            <span className="text-[#0F7B6C] text-2xl font-bold">&#10003;</span>
+          </div>
+          <h2 className="text-lg font-semibold mb-1">Pool Submitted</h2>
+          <p className="text-sm text-[#787774]">{poolName} — {completedCount} bouts recorded</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-950 text-white">
+    <div className="flex flex-col min-h-screen bg-[#FBFBFA] text-[#37352F]">
       {/* Header */}
-      <header className="bg-gray-900 px-4 py-3 border-b border-gray-800">
+      <header className="bg-white px-4 py-3 border-b border-[#E9E9E7]">
         <div className="flex items-center justify-between mb-2">
           <div>
-            <p className="font-bold text-lg">{poolName}</p>
-            <p className="text-xs text-gray-400">{eventName}</p>
+            <p className="font-semibold text-base text-[#37352F]">{poolName}</p>
+            <p className="text-xs text-[#9B9A97]">{eventName}</p>
           </div>
           <div className="text-right text-sm">
-            <span className="text-gray-400">
+            <span className="text-[#787774]">
               {completedCount}/{totalBouts}
             </span>
           </div>
         </div>
-        <div className="w-full bg-gray-800 rounded-full h-2">
+        <div className="w-full bg-[#E9E9E7] rounded-full h-1.5">
           <div
-            className="bg-blue-500 h-2 rounded-full transition-all"
+            className="bg-[#0B6E99] h-1.5 rounded-full transition-all"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -280,7 +284,7 @@ export default function FencingRankingDashboard({
       {/* Bout List */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-4 space-y-2">
-          <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">
+          <p className="text-xs text-[#9B9A97] uppercase tracking-wider mb-2">
             Bout Order
           </p>
           {boutOrder.map(([a, b], i) => {
@@ -295,40 +299,40 @@ export default function FencingRankingDashboard({
                 key={key}
                 onClick={() => !result && openScoring(a, b, i)}
                 disabled={!!result}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg min-h-[48px] text-left transition-colors ${
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-[4px] min-h-[48px] text-left transition-colors ${
                   result
-                    ? "bg-gray-900/50 opacity-60"
-                    : "bg-gray-900 active:bg-gray-800"
+                    ? "bg-[#F7F6F3] opacity-60 border border-[#E9E9E7]"
+                    : "bg-white border border-[#E9E9E7] active:bg-[#EFEFEF]"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-500 w-6">{i + 1}.</span>
+                  <span className="text-xs text-[#9B9A97] w-6">{i + 1}.</span>
                   <span
                     className={
                       result?.winner === athleteA.id
-                        ? "text-green-400 font-semibold"
-                        : ""
+                        ? "text-[#0F7B6C] font-semibold"
+                        : "text-[#37352F]"
                     }
                   >
                     {athleteA.name}
                   </span>
-                  <span className="text-gray-600 text-xs">vs</span>
+                  <span className="text-[#9B9A97] text-xs">vs</span>
                   <span
                     className={
                       result?.winner === athleteB.id
-                        ? "text-green-400 font-semibold"
-                        : ""
+                        ? "text-[#0F7B6C] font-semibold"
+                        : "text-[#37352F]"
                     }
                   >
                     {athleteB.name}
                   </span>
                 </div>
                 {result ? (
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-[#9B9A97]">
                     {result.winnerScore}–{result.loserScore}
                   </span>
                 ) : (
-                  <span className="text-xs text-blue-400">Score →</span>
+                  <span className="text-xs text-[#0B6E99] font-medium">Score &#8594;</span>
                 )}
               </button>
             );
@@ -337,81 +341,83 @@ export default function FencingRankingDashboard({
 
         {/* Matrix Grid */}
         <div className="p-4 overflow-x-auto">
-          <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">
+          <p className="text-xs text-[#9B9A97] uppercase tracking-wider mb-2">
             Pool Matrix
           </p>
-          <table className="text-xs w-full border-collapse">
-            <thead>
-              <tr>
-                <th className="p-1 text-left text-gray-500">#</th>
-                {athletes.map((a, i) => (
-                  <th key={a.id} className="p-1 text-center text-gray-400 w-10">
-                    {i + 1}
-                  </th>
-                ))}
-                <th className="p-1 text-center text-gray-400">V</th>
-              </tr>
-            </thead>
-            <tbody>
-              {athletes.map((rowA, ri) => (
-                <tr key={rowA.id}>
-                  <td className="p-1 text-gray-400 whitespace-nowrap">
-                    {ri + 1}. {rowA.initials}
-                  </td>
-                  {athletes.map((colA, ci) => {
-                    if (ri === ci) {
-                      return (
-                        <td
-                          key={colA.id}
-                          className="p-1 text-center bg-gray-800"
-                        >
-                          ×
-                        </td>
-                      );
-                    }
-                    const k1 = boutKey(ri + 1, ci + 1);
-                    const k2 = boutKey(ci + 1, ri + 1);
-                    const r = results[k1] || results[k2];
-                    if (!r) {
-                      return (
-                        <td
-                          key={colA.id}
-                          className="p-1 text-center text-gray-700 cursor-pointer"
-                          onClick={() => {
-                            const bIdx = boutOrder.findIndex(
-                              ([x, y]) =>
-                                (x === ri + 1 && y === ci + 1) ||
-                                (x === ci + 1 && y === ri + 1),
-                            );
-                            if (bIdx >= 0) {
-                              const [ba, bb] = boutOrder[bIdx];
-                              openScoring(ba, bb, bIdx);
-                            }
-                          }}
-                        >
-                          –
-                        </td>
-                      );
-                    }
-                    const isVictory = r.winner === rowA.id;
-                    const myScore = isVictory ? r.winnerScore : r.loserScore;
-                    return (
-                      <td
-                        key={colA.id}
-                        className={`p-1 text-center font-mono ${isVictory ? "text-green-400" : "text-red-400"}`}
-                      >
-                        {isVictory ? "V" : "D"}
-                        {myScore}
-                      </td>
-                    );
-                  })}
-                  <td className="p-1 text-center font-semibold text-yellow-400">
-                    {athleteStats[rowA.id]?.v ?? 0}
-                  </td>
+          <div className="bg-white rounded-[4px] border border-[#E9E9E7] overflow-hidden">
+            <table className="text-xs w-full border-collapse">
+              <thead>
+                <tr className="border-b border-[#E9E9E7]">
+                  <th className="p-1.5 text-left text-[#9B9A97] bg-[#F7F6F3]">#</th>
+                  {athletes.map((a, i) => (
+                    <th key={a.id} className="p-1.5 text-center text-[#787774] w-10 bg-[#F7F6F3]">
+                      {i + 1}
+                    </th>
+                  ))}
+                  <th className="p-1.5 text-center text-[#787774] bg-[#F7F6F3]">V</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {athletes.map((rowA, ri) => (
+                  <tr key={rowA.id} className="border-b border-[#E9E9E7] last:border-b-0">
+                    <td className="p-1.5 text-[#787774] whitespace-nowrap">
+                      {ri + 1}. {rowA.initials}
+                    </td>
+                    {athletes.map((colA, ci) => {
+                      if (ri === ci) {
+                        return (
+                          <td
+                            key={colA.id}
+                            className="p-1.5 text-center bg-[#F7F6F3] text-[#9B9A97]"
+                          >
+                            &#215;
+                          </td>
+                        );
+                      }
+                      const k1 = boutKey(ri + 1, ci + 1);
+                      const k2 = boutKey(ci + 1, ri + 1);
+                      const r = results[k1] || results[k2];
+                      if (!r) {
+                        return (
+                          <td
+                            key={colA.id}
+                            className="p-1.5 text-center text-[#E9E9E7] cursor-pointer"
+                            onClick={() => {
+                              const bIdx = boutOrder.findIndex(
+                                ([x, y]) =>
+                                  (x === ri + 1 && y === ci + 1) ||
+                                  (x === ci + 1 && y === ri + 1),
+                              );
+                              if (bIdx >= 0) {
+                                const [ba, bb] = boutOrder[bIdx];
+                                openScoring(ba, bb, bIdx);
+                              }
+                            }}
+                          >
+                            –
+                          </td>
+                        );
+                      }
+                      const isVictory = r.winner === rowA.id;
+                      const myScore = isVictory ? r.winnerScore : r.loserScore;
+                      return (
+                        <td
+                          key={colA.id}
+                          className={`p-1.5 text-center font-mono ${isVictory ? "text-[#0F7B6C]" : "text-[#E03E3E]"}`}
+                        >
+                          {isVictory ? "V" : "D"}
+                          {myScore}
+                        </td>
+                      );
+                    })}
+                    <td className="p-1.5 text-center font-semibold text-[#D9730D]">
+                      {athleteStats[rowA.id]?.v ?? 0}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -420,7 +426,7 @@ export default function FencingRankingDashboard({
         <div className="p-4 pb-safe">
           <button
             onClick={handleSubmitAll}
-            className="w-full py-4 rounded-xl bg-green-600 active:bg-green-700 text-white text-lg font-bold uppercase min-h-[56px]"
+            className="w-full py-4 rounded-[4px] bg-[#0F7B6C] active:bg-[#0a6358] text-white text-base font-semibold uppercase min-h-[56px]"
           >
             Submit Pool Results
           </button>
@@ -429,38 +435,38 @@ export default function FencingRankingDashboard({
 
       {/* Scoring Modal */}
       {activeBout && (
-        <div className="fixed inset-0 bg-black/80 flex items-end z-50">
-          <div className="w-full bg-gray-900 rounded-t-2xl p-5 pb-safe max-h-[80vh] overflow-y-auto">
-            <p className="text-center text-xs text-gray-500 uppercase tracking-wider mb-4">
+        <div className="fixed inset-0 bg-black/40 flex items-end z-50">
+          <div className="w-full bg-white rounded-t-xl border-t border-[#E9E9E7] p-5 pb-safe max-h-[80vh] overflow-y-auto shadow-lg">
+            <p className="text-center text-xs text-[#9B9A97] uppercase tracking-wider mb-4">
               Bout {activeBout.boutIndex + 1}
             </p>
 
             <div className="grid grid-cols-2 gap-4 mb-6">
               {/* Athlete A */}
               <div className="text-center">
-                <p className="font-semibold text-sm mb-3 truncate">
+                <p className="font-semibold text-sm mb-3 truncate text-[#37352F]">
                   {athletes[activeBout.a - 1]?.name}
                 </p>
                 <div className="flex items-center justify-center gap-3 mb-3">
                   <button
                     onClick={() => setScoreA(Math.max(0, scoreA - 1))}
-                    className="w-10 h-10 rounded-full bg-gray-800 active:bg-gray-700 text-lg font-bold"
+                    className="w-10 h-10 rounded-full bg-[#F7F6F3] active:bg-[#E8E7E4] border border-[#E9E9E7] text-lg font-bold text-[#37352F]"
                   >
-                    −
+                    &#8722;
                   </button>
-                  <span className="text-3xl font-mono font-bold w-10 text-center">
+                  <span className="text-3xl font-mono font-bold w-10 text-center text-[#37352F]">
                     {scoreA}
                   </span>
                   <button
                     onClick={() => setScoreA(scoreA + 1)}
-                    className="w-10 h-10 rounded-full bg-gray-800 active:bg-gray-700 text-lg font-bold"
+                    className="w-10 h-10 rounded-full bg-[#F7F6F3] active:bg-[#E8E7E4] border border-[#E9E9E7] text-lg font-bold text-[#37352F]"
                   >
                     +
                   </button>
                 </div>
                 <button
                   onClick={() => recordResult(scoringAId)}
-                  className="w-full py-3 rounded-lg bg-green-700 active:bg-green-800 text-white font-bold uppercase text-sm min-h-[48px]"
+                  className="w-full py-3 rounded-[4px] bg-[#0F7B6C] active:bg-[#0a6358] text-white font-semibold uppercase text-sm min-h-[48px]"
                 >
                   Victory
                 </button>
@@ -468,29 +474,29 @@ export default function FencingRankingDashboard({
 
               {/* Athlete B */}
               <div className="text-center">
-                <p className="font-semibold text-sm mb-3 truncate">
+                <p className="font-semibold text-sm mb-3 truncate text-[#37352F]">
                   {athletes[activeBout.b - 1]?.name}
                 </p>
                 <div className="flex items-center justify-center gap-3 mb-3">
                   <button
                     onClick={() => setScoreB(Math.max(0, scoreB - 1))}
-                    className="w-10 h-10 rounded-full bg-gray-800 active:bg-gray-700 text-lg font-bold"
+                    className="w-10 h-10 rounded-full bg-[#F7F6F3] active:bg-[#E8E7E4] border border-[#E9E9E7] text-lg font-bold text-[#37352F]"
                   >
-                    −
+                    &#8722;
                   </button>
-                  <span className="text-3xl font-mono font-bold w-10 text-center">
+                  <span className="text-3xl font-mono font-bold w-10 text-center text-[#37352F]">
                     {scoreB}
                   </span>
                   <button
                     onClick={() => setScoreB(scoreB + 1)}
-                    className="w-10 h-10 rounded-full bg-gray-800 active:bg-gray-700 text-lg font-bold"
+                    className="w-10 h-10 rounded-full bg-[#F7F6F3] active:bg-[#E8E7E4] border border-[#E9E9E7] text-lg font-bold text-[#37352F]"
                   >
                     +
                   </button>
                 </div>
                 <button
                   onClick={() => recordResult(scoringBId)}
-                  className="w-full py-3 rounded-lg bg-green-700 active:bg-green-800 text-white font-bold uppercase text-sm min-h-[48px]"
+                  className="w-full py-3 rounded-[4px] bg-[#0F7B6C] active:bg-[#0a6358] text-white font-semibold uppercase text-sm min-h-[48px]"
                 >
                   Victory
                 </button>
@@ -499,7 +505,7 @@ export default function FencingRankingDashboard({
 
             <button
               onClick={() => setActiveBout(null)}
-              className="w-full py-3 rounded-lg bg-gray-800 active:bg-gray-700 text-gray-400 font-semibold uppercase text-sm min-h-[48px]"
+              className="w-full py-3 rounded-[4px] bg-[#F7F6F3] active:bg-[#E8E7E4] text-[#787774] border border-[#E9E9E7] font-semibold uppercase text-sm min-h-[48px]"
             >
               Cancel
             </button>

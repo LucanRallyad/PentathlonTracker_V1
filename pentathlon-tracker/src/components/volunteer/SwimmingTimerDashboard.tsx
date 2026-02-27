@@ -133,18 +133,18 @@ export default function SwimmingTimerDashboard({
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-950 text-white">
+    <div className="flex flex-col min-h-screen bg-[#FBFBFA] text-[#37352F]">
       {/* Header */}
-      <header className="bg-gray-900 px-4 py-3 border-b border-gray-800">
+      <header className="bg-white px-4 py-3 border-b border-[#E9E9E7]">
         <div className="flex items-center justify-between">
-          <div className="bg-blue-600 text-white font-bold text-lg px-3 py-1 rounded">
+          <div className="bg-[#DDEBF1] text-[#0B6E99] font-semibold text-sm px-3 py-1 rounded-[3px]">
             {laneName}
           </div>
           <div className="text-right">
-            <p className="font-semibold text-base truncate max-w-[200px]">
+            <p className="font-semibold text-sm truncate max-w-[200px] text-[#37352F]">
               {athleteName}
             </p>
-            <p className="text-xs text-gray-400">{eventName}</p>
+            <p className="text-xs text-[#9B9A97]">{eventName}</p>
           </div>
         </div>
       </header>
@@ -154,12 +154,12 @@ export default function SwimmingTimerDashboard({
         <div
           className={`font-mono font-bold tracking-wider transition-colors ${
             state === "running"
-              ? "text-green-400"
+              ? "text-[#0F7B6C]"
               : state === "stopped"
-                ? "text-red-400"
+                ? "text-[#E03E3E]"
                 : state === "confirmed"
-                  ? "text-blue-400"
-                  : "text-white"
+                  ? "text-[#0B6E99]"
+                  : "text-[#37352F]"
           }`}
           style={{ fontSize: "clamp(48px, 14vw, 80px)" }}
         >
@@ -167,17 +167,17 @@ export default function SwimmingTimerDashboard({
         </div>
 
         {state === "running" && (
-          <p className="text-xs text-gray-500 mt-1 uppercase tracking-widest">
+          <p className="text-xs text-[#0F7B6C] mt-1 uppercase tracking-widest font-medium">
             Running
           </p>
         )}
         {state === "stopped" && (
-          <p className="text-xs text-red-400 mt-1 uppercase tracking-widest">
+          <p className="text-xs text-[#E03E3E] mt-1 uppercase tracking-widest font-medium">
             Stopped — Confirm?
           </p>
         )}
         {state === "confirmed" && (
-          <p className="text-xs text-blue-400 mt-1 uppercase tracking-widest">
+          <p className="text-xs text-[#0B6E99] mt-1 uppercase tracking-widest font-medium">
             Submitted
           </p>
         )}
@@ -186,17 +186,17 @@ export default function SwimmingTimerDashboard({
       {/* Splits */}
       {splits.length > 0 && (
         <div className="px-4 pb-2 max-h-32 overflow-y-auto">
-          <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">
+          <p className="text-xs text-[#9B9A97] uppercase tracking-wider mb-1">
             Splits
           </p>
           <div className="space-y-1">
             {splits.map((s, i) => (
               <div
                 key={i}
-                className="flex justify-between text-sm font-mono bg-gray-900 rounded px-3 py-1"
+                className="flex justify-between text-sm font-mono bg-white rounded-[4px] border border-[#E9E9E7] px-3 py-1.5"
               >
-                <span className="text-gray-400">Lap {i + 1}</span>
-                <span>{formatTime(s)}</span>
+                <span className="text-[#787774]">Lap {i + 1}</span>
+                <span className="text-[#37352F]">{formatTime(s)}</span>
               </div>
             ))}
           </div>
@@ -208,7 +208,7 @@ export default function SwimmingTimerDashboard({
         {state === "idle" && (
           <button
             onClick={handleStart}
-            className="w-full py-5 rounded-xl bg-green-600 active:bg-green-700 text-white text-xl font-bold uppercase tracking-wider min-h-[60px]"
+            className="w-full py-4 rounded-[4px] bg-[#0F7B6C] active:bg-[#0a6358] text-white text-lg font-semibold uppercase tracking-wider min-h-[56px]"
           >
             Start
           </button>
@@ -219,13 +219,13 @@ export default function SwimmingTimerDashboard({
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={handleLap}
-                className="py-5 rounded-xl bg-blue-600 active:bg-blue-700 text-white text-lg font-bold uppercase min-h-[60px]"
+                className="py-4 rounded-[4px] bg-[#0B6E99] active:bg-[#095a7d] text-white text-base font-semibold uppercase min-h-[56px]"
               >
                 Lap
               </button>
               <button
                 onClick={handleStop}
-                className="py-5 rounded-xl bg-red-600 active:bg-red-700 text-white text-lg font-bold uppercase min-h-[60px]"
+                className="py-4 rounded-[4px] bg-[#E03E3E] active:bg-[#c43333] text-white text-base font-semibold uppercase min-h-[56px]"
               >
                 Stop
               </button>
@@ -237,13 +237,13 @@ export default function SwimmingTimerDashboard({
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={handleCancel}
-              className="py-5 rounded-xl bg-gray-700 active:bg-gray-600 text-white text-lg font-bold uppercase min-h-[60px]"
+              className="py-4 rounded-[4px] bg-[#F7F6F3] active:bg-[#E8E7E4] text-[#37352F] border border-[#E9E9E7] text-base font-semibold uppercase min-h-[56px]"
             >
               Cancel
             </button>
             <button
               onClick={handleConfirm}
-              className="py-5 rounded-xl bg-green-600 active:bg-green-700 text-white text-lg font-bold uppercase min-h-[60px]"
+              className="py-4 rounded-[4px] bg-[#0F7B6C] active:bg-[#0a6358] text-white text-base font-semibold uppercase min-h-[56px]"
             >
               Confirm
             </button>
@@ -253,7 +253,7 @@ export default function SwimmingTimerDashboard({
         {state === "confirmed" && (
           <button
             onClick={handleReset}
-            className="w-full py-4 rounded-xl bg-gray-800 active:bg-gray-700 text-gray-300 text-base font-semibold uppercase min-h-[48px]"
+            className="w-full py-3.5 rounded-[4px] bg-[#F7F6F3] active:bg-[#E8E7E4] text-[#787774] border border-[#E9E9E7] text-sm font-semibold uppercase min-h-[48px]"
           >
             Done
           </button>

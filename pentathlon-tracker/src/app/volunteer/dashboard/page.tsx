@@ -144,10 +144,10 @@ export default function VolunteerDashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-950">
+      <div className="flex items-center justify-center min-h-screen bg-[#FBFBFA]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4" />
-          <p className="text-gray-400">Loading...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0B6E99] mx-auto mb-4" />
+          <p className="text-[#787774] text-sm">Loading...</p>
         </div>
       </div>
     );
@@ -155,12 +155,12 @@ export default function VolunteerDashboardPage() {
 
   if (!info) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-950">
-        <div className="text-center p-8">
-          <h1 className="text-xl font-bold text-red-400 mb-2">
+      <div className="flex items-center justify-center min-h-screen bg-[#FBFBFA]">
+        <div className="text-center p-8 bg-white rounded-[4px] border border-[#E9E9E7] mx-4 max-w-sm w-full">
+          <h1 className="text-lg font-semibold text-[#E03E3E] mb-2">
             Session Expired
           </h1>
-          <p className="text-gray-400">
+          <p className="text-sm text-[#787774]">
             Please use your access link to reconnect.
           </p>
         </div>
@@ -170,15 +170,15 @@ export default function VolunteerDashboardPage() {
 
   if (!info.assignment) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-950">
-        <div className="text-center p-8">
-          <h1 className="text-xl font-bold text-white mb-2">
+      <div className="flex items-center justify-center min-h-screen bg-[#FBFBFA]">
+        <div className="text-center p-8 bg-white rounded-[4px] border border-[#E9E9E7] mx-4 max-w-sm w-full">
+          <h1 className="text-lg font-semibold text-[#37352F] mb-1">
             Welcome, {info.name}
           </h1>
-          <p className="text-lg text-gray-300 mb-1">{info.competitionName}</p>
-          <div className="mt-6 p-4 bg-amber-900/30 border border-amber-700/50 rounded-lg">
-            <p className="text-amber-400">Waiting for assignment...</p>
-            <p className="text-sm text-amber-500/70 mt-1">
+          <p className="text-sm text-[#787774] mb-4">{info.competitionName}</p>
+          <div className="p-4 bg-[#FAEBDD] border border-[#D9730D]/20 rounded-[4px]">
+            <p className="text-sm text-[#D9730D] font-medium">Waiting for assignment...</p>
+            <p className="text-xs text-[#D9730D]/70 mt-1">
               An administrator will assign you to an event shortly.
             </p>
           </div>
@@ -202,21 +202,21 @@ export default function VolunteerDashboardPage() {
   const firstAthlete = athletes[0];
 
   return (
-    <div className="min-h-screen bg-gray-950 relative">
+    <div className="min-h-screen bg-[#FBFBFA] relative max-w-lg mx-auto">
       {/* Submit Status Toast */}
       {submitStatus === "submitting" && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm flex items-center gap-2">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#DDEBF1] text-[#0B6E99] px-4 py-2 rounded-[4px] shadow-sm border border-[#0B6E99]/20 text-sm flex items-center gap-2">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#0B6E99]" />
           Submitting...
         </div>
       )}
       {submitStatus === "success" && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#DDEDEA] text-[#0F7B6C] px-4 py-2 rounded-[4px] shadow-sm border border-[#0F7B6C]/20 text-sm font-medium">
           Score submitted successfully
         </div>
       )}
       {submitStatus === "error" && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#FBE4E4] text-[#E03E3E] px-4 py-2 rounded-[4px] shadow-sm border border-[#E03E3E]/20 text-sm font-medium">
           {submitError}
         </div>
       )}
@@ -345,25 +345,25 @@ export default function VolunteerDashboardPage() {
       {/* Fallback: unrecognized discipline/role combo */}
       {!["swimming", "fencing_ranking", "obstacle", "laser_run", "riding"].includes(discipline) && (
         <div className="flex flex-col items-center justify-center min-h-screen p-6">
-          <header className="bg-gray-900 w-full px-4 py-3 border-b border-gray-800 fixed top-0">
-            <div className="flex items-center justify-between">
+          <header className="bg-white w-full px-4 py-3 border-b border-[#E9E9E7] fixed top-0">
+            <div className="flex items-center justify-between max-w-lg mx-auto">
               <div>
-                <p className="text-sm text-gray-400">
+                <p className="text-xs text-[#787774]">
                   {info.competitionName}
                 </p>
-                <p className="font-semibold text-white">
+                <p className="font-semibold text-sm text-[#37352F]">
                   {info.name} — {role}
                 </p>
               </div>
-              <div className="w-3 h-3 rounded-full bg-green-500" />
+              <div className="w-2.5 h-2.5 rounded-full bg-[#0F7B6C]" />
             </div>
           </header>
-          <div className="bg-gray-900 rounded-lg border border-gray-800 p-6 text-center mt-16">
-            <p className="text-lg font-semibold capitalize text-white">
+          <div className="bg-white rounded-[4px] border border-[#E9E9E7] p-6 text-center mt-16">
+            <p className="text-base font-semibold capitalize text-[#37352F]">
               {discipline.replace("_", " ")}
             </p>
-            <p className="text-sm text-gray-400 mt-1">Role: {role}</p>
-            <p className="text-sm text-gray-500 mt-4">
+            <p className="text-xs text-[#787774] mt-1">Role: {role}</p>
+            <p className="text-xs text-[#9B9A97] mt-4">
               Dashboard not available for this discipline.
             </p>
           </div>
@@ -380,17 +380,17 @@ export default function VolunteerDashboardPage() {
           (discipline === "laser_run" && role === "timer" && firstAthlete) ||
           (discipline === "riding" && role === "judge" && firstAthlete)
         ) && (
-          <div className="flex flex-col items-center justify-center min-h-screen bg-gray-950 text-white p-6">
-            <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 text-center max-w-sm w-full">
-              <p className="text-lg font-semibold capitalize mb-2">
+          <div className="flex flex-col items-center justify-center min-h-screen text-[#37352F] p-6">
+            <div className="bg-white rounded-[4px] border border-[#E9E9E7] p-6 text-center max-w-sm w-full">
+              <p className="text-base font-semibold capitalize mb-2">
                 {discipline.replace("_", " ")}
               </p>
-              <p className="text-sm text-gray-400 mb-4">Role: {role}</p>
-              <div className="bg-amber-900/30 border border-amber-700/50 rounded-lg p-3">
-                <p className="text-amber-400 text-sm">
+              <p className="text-xs text-[#787774] mb-4">Role: {role}</p>
+              <div className="bg-[#FAEBDD] border border-[#D9730D]/20 rounded-[4px] p-3">
+                <p className="text-[#D9730D] text-sm font-medium">
                   Waiting for athlete assignment...
                 </p>
-                <p className="text-xs text-amber-500/70 mt-1">
+                <p className="text-xs text-[#D9730D]/70 mt-1">
                   An administrator needs to assign athletes to your role.
                 </p>
               </div>
