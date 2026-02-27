@@ -5,7 +5,7 @@ import Link from "next/link";
 import { TopNav } from "@/components/TopNav";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CompetitionStatusControl } from "@/components/CompetitionStatusControl";
-import { Plus, PenLine, Eye, Users, Trophy, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
+import { Plus, PenLine, Eye, Users, Trophy, ChevronDown, ChevronRight, Trash2, UserCheck } from "lucide-react";
 
 interface Competition {
   id: string;
@@ -210,6 +210,13 @@ function AdminCompetitionCard({
         >
           <Trophy size={12} />
           Results
+        </Link>
+        <Link
+          href={`/admin/competitions/${competition.id}/volunteers`}
+          className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-[#0F7B6C] border border-[#0F7B6C] rounded-[3px] hover:bg-[#E6F4F1] transition-colors"
+        >
+          <UserCheck size={12} />
+          Volunteers
         </Link>
         <Link
           href={`/competitions/${competition.id}`}

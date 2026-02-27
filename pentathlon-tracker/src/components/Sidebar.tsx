@@ -23,6 +23,8 @@ import {
   GitCompare,
   TrendingUp,
   Upload,
+  UserCheck,
+  MonitorSmartphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/useAuth";
@@ -66,6 +68,7 @@ export function Sidebar() {
     { label: "Score Entry", href: "/admin/score-entry", icon: <PenLine size={18} /> },
     { label: "Results", href: "/admin/results", icon: <Medal size={18} /> },
     { label: "Users", href: "/admin/users", icon: <UserCog size={18} /> },
+    { label: "Volunteers", href: "/admin/volunteers", icon: <UserCheck size={18} /> },
     { label: "Settings", href: "/admin/settings", icon: <Settings size={18} /> },
   ];
 
@@ -75,6 +78,7 @@ export function Sidebar() {
     { label: "Finances", href: "/super-admin/finances", icon: <DollarSign size={18} /> },
     { label: "Accounts", href: "/super-admin/accounts", icon: <Crown size={18} /> },
     { label: "Import Data", href: "/super-admin/import", icon: <Upload size={18} /> },
+    { label: "Volunteer Views", href: "/super-admin/volunteer-views", icon: <MonitorSmartphone size={18} /> },
   ];
 
   const sidebarContent = (isMobile: boolean) => {
