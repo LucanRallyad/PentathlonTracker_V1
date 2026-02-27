@@ -31,6 +31,12 @@ export const laserRunEntry = baseScoreEntry.extend({
   shootingStation: z.number().int().min(0).max(20).optional().default(0),
   gateAssignment: z.enum(['A', 'B', 'P']).optional().default('A'),
   penaltySeconds: z.number().int().min(0).max(600).optional().default(0),
+  startMode: z.enum(["staggered", "mass"]).optional().default("staggered"),
+  overallTimeSeconds: z.number().min(0).max(3600).optional(),
+  totalShootTimeSeconds: z.number().min(0).max(3600).optional(),
+  totalRunTimeSeconds: z.number().min(0).max(3600).optional(),
+  adjustedTimeSeconds: z.number().min(0).max(3600).optional(),
+  shootingDetail: z.string().optional(),
 });
 
 export const ridingEntry = baseScoreEntry.extend({

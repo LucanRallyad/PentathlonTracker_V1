@@ -49,9 +49,14 @@ export interface SwimmingInput {
 
 export interface LaserRunInput {
   finishTimeSeconds: number;
+  overallTimeSeconds?: number;
   penaltySeconds?: number;
   ageCategory?: AgeCategory;
   isRelay?: boolean;
+  totalShootTimeSeconds?: number;
+  totalRunTimeSeconds?: number;
+  adjustedTimeSeconds?: number;
+  startMode?: "staggered" | "mass";
 }
 
 export interface RidingInput {
@@ -123,6 +128,73 @@ export interface DEMatchResult {
   winnerId: string;
   score1: number;
   score2: number;
+}
+
+// ─── Laser Run Target Config ────────────────────────────────────────────────
+
+// ─── Volunteer Types ────────────────────────────────────────────────────────
+
+export type VolunteerRole = "timer" | "referee" | "judge" | "recorder" | "flagger";
+
+export interface VolunteerAssignmentMetadata {
+  lane?: number;
+  pool?: string;
+  bracketSection?: string;
+  targetPosition?: number;
+  wave?: number;
+  gate?: string;
+}
+
+// ─── Laser Run Timer / Aggregation Types ────────────────────────────────────
+
+export interface LaserRunLap {
+  lap: number;
+  splitTimestamp: number;
+  type: "shoot" | "run";
+}
+
+export interface LaserRunShootTime {
+  visit: number;
+  shootTimeSeconds: number;
+  timedOut: boolean;
+}
+
+export interface LaserRunTimerData {
+  overallTimeSeconds: number;
+  startMode: "staggered" | "mass";
+  handicapStartDelay: number;
+  isPackStart: boolean;
+  targetPosition: number;
+  wave: number;
+  gateAssignment: string;
+  totalLaps: number;
+  laps: LaserRunLap[];
+  shootTimes: LaserRunShootTime[];
+}
+
+export interface LaserRunAggregatedLap {
+  lap: number;
+  splitTimestamp: number;
+  lapTimeSeconds: number;
+  type: "shoot" | "run";
+  shootTimeSeconds: number | null;
+  runTimeSeconds: number;
+}
+
+export interface LaserRunAggregatedRecord {
+  overallTimeSeconds: number;
+  adjustedTimeSeconds: number | null;
+  totalShootTimeSeconds: number;
+  totalRunTimeSeconds: number;
+  penaltySeconds: number;
+  startMode: string;
+  totalLaps: number;
+  laps: LaserRunAggregatedLap[];
+  handicapStartDelay: number;
+  isPackStart: boolean;
+  gateAssignment: string;
+  targetPosition: number;
+  wave: number;
 }
 
 // ─── Laser Run Target Config ────────────────────────────────────────────────

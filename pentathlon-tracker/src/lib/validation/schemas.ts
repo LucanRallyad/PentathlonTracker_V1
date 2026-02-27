@@ -164,6 +164,10 @@ export const userUpdateSchema = z.object({
   role: z.enum(["athlete", "official", "admin", "super_admin"]).optional(),
 });
 
+// ─── Volunteer Schemas ──────────────────────────────────────────────────────
+
+export * from "./schemas/volunteerSchemas";
+
 // ─── Helper Functions ────────────────────────────────────────────────────────
 
 /**

@@ -57,6 +57,7 @@ model Athlete {
   privacySettings      PrivacySettings?
   deletionRequests     DeletionRequest[]
   dataExportRequests   DataExportRequest[]
+  preliminaryScores    PreliminaryScore[]
 }
 
 // ─── Competitions ────────────────────────────────────────────────────────────
@@ -72,11 +73,14 @@ model Competition {
   status          String @default("upcoming") // upcoming, active, completed
   competitionType String @default("individual") // individual, relay, team
   ageCategory     String @default("Senior") // U9..Senior, Masters, All
+  showPreliminaryScores Boolean @default(false)
+  volunteerAccessEnabled Boolean @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   events Event[]
   competitionAthletes CompetitionAthlete[]
+  volunteers Volunteer[]
 }
 
 // ─── Junction: Competition <-> Athlete ───────────────────────────────────────
@@ -117,6 +121,8 @@ model Event {
   swimmingScores      SwimmingScore[]
   laserRunScores      LaserRunScore[]
   ridingScores        RidingScore[]
+  volunteerAssignments VolunteerAssignment[]
+  preliminaryScores    PreliminaryScore[]
 }
 
 // ─── Discipline-Specific Score Tables ────────────────────────────────────────
@@ -185,19 +191,25 @@ model SwimmingScore {
 }
 
 model LaserRunScore {
-  id                  String @id @default(cuid())
-  eventId             String
-  athleteId           String
-  finishTimeSeconds   Float
-  handicapStartDelay  Int    @default(0)
-  rawDelay            Int    @default(0)
-  isPackStart         Boolean @default(false)
-  shootingStation     Int    @default(0)
-  gateAssignment      String @default("A") // A, B, P
-  penaltySeconds      Int    @default(0)
-  calculatedPoints    Float
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                     String  @id @default(cuid())
+  eventId                String
+  athleteId              String
+  finishTimeSeconds      Float   // kept for backward compat; same as overallTimeSeconds
+  overallTimeSeconds     Float?  // START→STOP elapsed time
+  handicapStartDelay     Int     @default(0)
+  rawDelay               Int     @default(0)
+  isPackStart            Boolean @default(false)
+  startMode              String  @default("staggered") // "staggered" | "mass"
+  shootingStation        Int     @default(0)
+  gateAssignment         String  @default("A") // A, B, P
+  penaltySeconds         Int     @default(0)
+  totalShootTimeSeconds  Float?  // sum of all shoot sub-timer durations
+  totalRunTimeSeconds    Float?  // overallTime - totalShootTime
+  adjustedTimeSeconds    Float?  // mass start only: overallTime - handicapStartDelay
+  shootingDetail         String? // JSON: per-lap breakdown (laps, shootTimes, runLegs)
+  calculatedPoints       Float
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
   event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
   athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
@@ -221,6 +233,70 @@ model RidingScore {
   athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
 
   @@unique([eventId, athleteId])
+}
+
+// ─── Volunteer System ─────────────────────────────────────────────────────────
+
+model Volunteer {
+  id            String    @id @default(cuid())
+  name          String
+  email         String?
+  phone         String?
+  accessToken   String    @unique
+  competitionId String
+  status        String    @default("active") // active, revoked
+  createdAt     DateTime  @default(now())
+  expiresAt     DateTime
+  lastActiveAt  DateTime?
+  createdBy     String    // admin userId
+
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  assignments VolunteerAssignment[]
+  preliminaryScores PreliminaryScore[]
+
+  @@index([competitionId])
+  @@index([accessToken])
+}
+
+model VolunteerAssignment {
+  id           String   @id @default(cuid())
+  volunteerId  String
+  eventId      String
+  role         String   // timer, referee, judge, recorder, flagger
+  athleteIds   String?  // JSON array of athlete IDs (null = entire event/pool)
+  metadata     String?  // JSON: discipline-specific config (lane, pool, etc.)
+  assignedAt   DateTime @default(now())
+  assignedBy   String   // admin userId
+
+  volunteer Volunteer @relation(fields: [volunteerId], references: [id], onDelete: Cascade)
+  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([volunteerId])
+  @@index([eventId])
+}
+
+model PreliminaryScore {
+  id              String    @id @default(cuid())
+  eventId         String
+  athleteId       String
+  volunteerId     String
+  discipline      String    // swimming, fencing_ranking, fencing_de, obstacle, laser_run, riding
+  data            String    // JSON: discipline-specific raw data
+  status          String    @default("preliminary") // preliminary, verified, rejected, corrected
+  submittedAt     DateTime  @default(now())
+  verifiedAt      DateTime?
+  verifiedBy      String?
+  rejectionReason String?
+  correctedData   String?   // JSON: corrected values (if status = corrected)
+  officialScoreId String?
+
+  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  athlete   Athlete   @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  volunteer Volunteer @relation(fields: [volunteerId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, status])
+  @@index([volunteerId])
+  @@index([athleteId])
 }
 
 // ─── Training Entries (manual athlete input) ─────────────────────────────────
