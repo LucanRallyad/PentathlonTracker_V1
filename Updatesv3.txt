@@ -2,4 +2,3 @@ P
 Mobile views numbers & cards need to be shifted around to be better viewable. I'm thinking increase size and move to the right of the cards
 
 In the mobile view the back button doesn't look right its kinda smushed, redesign the top header to have a better navigation expereince
-
