@@ -1,0 +1,16 @@
+
+*/
+When generating the swimming seed times I needs to filter groups into men and women, right now it just filters on seedtime but it also needs to account for gender cause only men can be in a heat and only women can be in a heat. To add onto this make a card where you can manually input swim seed data and then generate the starting line based of that, as well I want to be able to drag to reorder the athletes instead of having to click the up and down arrows.
+Double check the swimming points calculations and input data as when somethings is inputted in minuites it is automatically 595 points, so we need to make sure that it understands data inputted in minutes:seconds. or in 0:seconds or in :seconds or in just seconds.
+I want to change the schedule tab under competition to be an actual calender view so its easier to see. The calendar view should only show however many days the competition spans starting at the first day and then ending at the last day. Show the full days and times. 
+To add to the live feed tab put a search bar to be able to filter to that specific athelete to only see their updates. To add to this if a non logged in viewer favourites an athlete it should save in their cookies and there should be a toggleable switch that allows them to see only updates to that/those athletes, make it so if they favourite an athlete that the toggle it turned on initially and needs ot be 
+I want to be able to also compare to world records and other athelets and compeititons from the UIPM website 
+When adding athletes I should just be able to click their name in the search bar and it should automatically add to list It should just add the information into the bottom area and then having to click the "+ competition" button 
+Add a button to create new athelets in the normal athlete area but make it so only admins and super admins are able to do such
+*/
+
+
+I need to create a new tab under all login views to the side bar. This needs to be national rankings which is based on information I will give you. 
+Link to pent canada website to get the next upcoming events and have them as suggestions into the add competition area for the admins + create an upcoming events area that lists them all. 
+Also need an area under the admin or maybe super admin to be able to uplaod excel files or google sheet files then I need a system to desifer and figure out and sort the data to then be implemented into the system. CLAUDE API???
+

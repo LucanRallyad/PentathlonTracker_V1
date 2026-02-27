@@ -1,0 +1,365 @@
+{
+    "name": "UIPM Laser Run Handicap Start Calculator",
+    "description": "Rules and formulas for calculating the handicap (staggered) start times for the Laser Run event in Modern Pentathlon. The handicap converts cumulative MP points from prior disciplines into time-based start delays so the first athlete across the finish line wins overall.",
+    "source": "UIPM Competition Rules - Section 5 (Laser Run), Articles 5.3.2, 5.4.2, 5.5",
+  
+    "handicap_start": {
+      "description": "Each athlete's cumulative MP points from prior events (Fencing + Obstacle + Swimming) are totalled. The leader starts at 0:00, all others start with a delay equal to their point deficit. 1 MP point = 1 second of delay.",
+  
+      "input_events": {
+        "description": "Sum MP points from all completed events before the Laser Run.",
+        "events_to_sum": [
+          {
+            "event": "fencing_ranking_round",
+            "description": "Points from the round-robin Ranking Round (based on 70% win threshold formula)."
+          },
+          {
+            "event": "fencing_direct_elimination",
+            "description": "Points from the Direct Elimination bracket (placement-based table)."
+          },
+          {
+            "event": "obstacle",
+            "description": "Points from the timed obstacle course (time-to-points conversion)."
+          },
+          {
+            "event": "swimming",
+            "description": "Points from the freestyle swimming event (time-to-points conversion)."
+          }
+        ],
+        "formula": "cumulative_mp_points = fencing_ranking_round_pts + fencing_direct_elimination_pts + obstacle_pts + swimming_pts"
+      },
+  
+      "start_time_calculation": {
+        "description": "The athlete with the highest cumulative MP points starts first at time 0:00. Every other athlete's start is delayed by the difference in points, where 1 point = 1 second.",
+        "formula": "start_delay_seconds = leader_cumulative_points - athlete_cumulative_points",
+        "conversion_rate": {
+          "points_per_second": 1,
+          "description": "1 MP point difference = 1 second start delay"
+        },
+        "leader_start_time": "00:00",
+        "example": {
+          "athletes": [
+            {
+              "name": "Athlete A",
+              "fencing_ranking_pts": 230,
+              "fencing_de_pts": 250,
+              "obstacle_pts": 340,
+              "swimming_pts": 260,
+              "cumulative_pts": 1080,
+              "start_delay_seconds": 0,
+              "start_time": "00:00"
+            },
+            {
+              "name": "Athlete B",
+              "fencing_ranking_pts": 220,
+              "fencing_de_pts": 244,
+              "obstacle_pts": 330,
+              "swimming_pts": 250,
+              "cumulative_pts": 1044,
+              "start_delay_seconds": 36,
+              "start_time": "00:36"
+            },
+            {
+              "name": "Athlete C",
+              "fencing_ranking_pts": 200,
+              "fencing_de_pts": 238,
+              "obstacle_pts": 310,
+              "swimming_pts": 240,
+              "cumulative_pts": 988,
+              "start_delay_seconds": 92,
+              "start_time_before_cap": "01:32",
+              "start_time": "01:30",
+              "capped": true,
+              "note": "Delay exceeds 90 seconds, so athlete joins pack start at 1:30."
+            }
+          ]
+        }
+      },
+  
+      "pack_start_rule": {
+        "description": "Athletes whose handicap delay exceeds 1 minute 30 seconds are grouped into a pack start at 1:30. They do not receive their individual staggered start time.",
+        "threshold_seconds": 90,
+        "pack_start_time": "01:30",
+        "rule_reference": "Art. 5.4.2 ii)",
+        "formula": "if start_delay_seconds > 90 then start_delay_seconds = 90"
+      },
+  
+      "start_gates": {
+        "description": "The handicap start uses three physical gates to organise the staggered departures.",
+        "gates": [
+          {
+            "gate": "A",
+            "purpose": "Primary start gate for athletes with staggered start times"
+          },
+          {
+            "gate": "B",
+            "purpose": "Secondary start gate for athletes with staggered start times"
+          },
+          {
+            "gate": "P",
+            "purpose": "Penalty gate for athletes serving time penalties at the start"
+          }
+        ],
+        "rule_reference": "Art. 5.4.2 i)",
+        "lineup_rule": "One minute before the start, all pentathletes must be at the corresponding gates assembled in the order of their start time."
+      },
+  
+      "shooting_station_assignment": {
+        "description": "Shooting station numbers correspond to starting position. The leader (first to start) shoots at station #1, the second athlete at station #2, and so on.",
+        "formula": "station_number = start_position (1-indexed, ordered by cumulative points descending)",
+        "rule_reference": "Art. 5.3.2"
+      }
+    },
+  
+    "laser_run_scoring": {
+      "description": "After the handicap start, the Laser Run itself awards MP points based on finish time. 500 MP points are awarded for the target time, ±1 point per second.",
+      "formula": "laser_run_mp_points = 500 + (target_time_seconds - actual_finish_time_seconds)",
+      "formula_alternate": "laser_run_mp_points = 500 - (actual_finish_time_seconds - target_time_seconds)",
+      "points_per_second": 1,
+  
+      "target_times_for_500_points": {
+        "individual": [
+          {
+            "age_group": "Senior, Junior, U19",
+            "total_distance_meters": 3000,
+            "running_sequences": "4 x 600m",
+            "shooting_sequences": "4 x 5 hits",
+            "shooting_distance_meters": 10,
+            "target_time": "13:20",
+            "target_time_seconds": 800
+          },
+          {
+            "age_group": "U17",
+            "total_distance_meters": 2400,
+            "running_sequences": "3 x 600m",
+            "shooting_sequences": "3 x 5 hits",
+            "shooting_distance_meters": 10,
+            "target_time": "10:30",
+            "target_time_seconds": 630
+          },
+          {
+            "age_group": "U15",
+            "total_distance_meters": 1800,
+            "running_sequences": "3 x 600m",
+            "shooting_sequences": "3 x 5 hits",
+            "shooting_distance_meters": 5,
+            "target_time": "07:40",
+            "target_time_seconds": 460
+          },
+          {
+            "age_group": "U13",
+            "total_distance_meters": 900,
+            "running_sequences": "2 x 300m",
+            "shooting_sequences": "2 x 5 hits",
+            "shooting_distance_meters": 5,
+            "target_time": "05:20",
+            "target_time_seconds": 320
+          },
+          {
+            "age_group": "U11",
+            "total_distance_meters": 600,
+            "running_sequences": "2 x 300m",
+            "shooting_sequences": "2 x 5 hits",
+            "shooting_distance_meters": "5m (both hands)",
+            "target_time": "04:00",
+            "target_time_seconds": 240
+          },
+          {
+            "age_group": "U9",
+            "total_distance_meters": 600,
+            "running_sequences": "2 x 300m",
+            "shooting_sequences": "2 x 5 hits",
+            "shooting_distance_meters": "5m (both hands)",
+            "target_time": "04:00",
+            "target_time_seconds": 240
+          }
+        ],
+        "relay": [
+          {
+            "age_group": "Senior, Junior, U19",
+            "total_distance_meters": 3600,
+            "running_sequences": "2 x 3 x 600m",
+            "shooting_sequences": "2 x 3 x 5 hits",
+            "shooting_distance_meters": 10,
+            "target_time": "13:20",
+            "target_time_seconds": 800
+          },
+          {
+            "age_group": "U17",
+            "total_distance_meters": 2400,
+            "running_sequences": "2 x 2 x 600m",
+            "shooting_sequences": "2 x 2 x 5 hits",
+            "shooting_distance_meters": 10,
+            "target_time": "07:40",
+            "target_time_seconds": 460
+          },
+          {
+            "age_group": "U15",
+            "total_distance_meters": 2400,
+            "running_sequences": "2 x 2 x 600m",
+            "shooting_sequences": "2 x 2 x 5 hits",
+            "shooting_distance_meters": 5,
+            "target_time": "07:40",
+            "target_time_seconds": 460
+          },
+          {
+            "age_group": "U13",
+            "total_distance_meters": 1200,
+            "running_sequences": "2 x 2 x 300m",
+            "shooting_sequences": "2 x 2 x 5 hits",
+            "shooting_distance_meters": 5,
+            "target_time": "05:20",
+            "target_time_seconds": 320
+          },
+          {
+            "age_group": "U11",
+            "total_distance_meters": 1200,
+            "running_sequences": "2 x 2 x 300m",
+            "shooting_sequences": "2 x 2 x 5 hits",
+            "shooting_distance_meters": "5m (both hands)",
+            "target_time": "05:20",
+            "target_time_seconds": 320
+          },
+          {
+            "age_group": "U9",
+            "total_distance_meters": 1200,
+            "running_sequences": "2 x 2 x 300m",
+            "shooting_sequences": "2 x 2 x 5 hits",
+            "shooting_distance_meters": "5m (both hands)",
+            "target_time": "05:20",
+            "target_time_seconds": 320
+          }
+        ]
+      },
+  
+      "shooting_series_rules": {
+        "hits_required": 5,
+        "max_shots": "unlimited",
+        "max_time_seconds": 50,
+        "target_valid_zone_diameter_mm": 59.5,
+        "pistol_must_touch_table_between_shots": true,
+        "rule": "Athlete must score 5 hits OR wait 50 seconds before starting the running leg."
+      }
+    },
+  
+    "final_result_calculation": {
+      "description": "Because of the handicap start, the overall competition result is determined by finish order in the Laser Run. The first athlete across the finish line wins. However, MP points are still calculated for record-keeping.",
+      "overall_winner": "First athlete to cross the Laser Run finish line",
+      "total_mp_points_formula": "total_score = fencing_ranking_round_pts + fencing_de_pts + obstacle_pts + swimming_pts + laser_run_pts",
+      "note": "The handicap start means the finish order should match the total MP points order. If fractional handicap timing is used, Photo Finish results must account for the staggered starts when producing final placings.",
+      "rule_reference": "Art. 5.4.7 ii) g)"
+    },
+  
+    "time_penalties_during_laser_run": {
+      "description": "Infractions during the Laser Run incur 10-second time penalties, which are equivalent to a 10 MP point deduction since 1 second = 1 point.",
+      "penalty_seconds": 10,
+      "equivalent_mp_points": 10,
+      "when_applied": {
+        "during_shooting_series": "Paid before the start of the subsequent shooting series at the shooting range.",
+        "after_final_series": "Paid in the Last Penalty Stop Area (located 300-400m after the shooting range)."
+      },
+      "infractions": [
+        {
+          "offence": "Contravening clothing regulations",
+          "penalty_seconds": 10
+        },
+        {
+          "offence": "Modifying start number dimensions",
+          "penalty_seconds": 10
+        },
+        {
+          "offence": "False start",
+          "penalty_seconds": 10
+        },
+        {
+          "offence": "Not placing pistol safely on table after shooting series",
+          "penalty_seconds": 10
+        },
+        {
+          "offence": "Not touching shooting table between each shot (after warning)",
+          "penalty_seconds": 10
+        },
+        {
+          "offence": "Coach assisting outside designated area (after first warning)",
+          "penalty_seconds": 10
+        },
+        {
+          "offence": "Removing pistol from box before official warm-up (second offence)",
+          "penalty_seconds": 10
+        },
+        {
+          "offence": "Not standing freely within shooting station (after warning)",
+          "penalty_seconds": 10
+        }
+      ]
+    },
+  
+    "implementation_pseudocode": {
+      "description": "Step-by-step logic for implementing the handicap start in an app.",
+      "steps": [
+        {
+          "step": 1,
+          "action": "collect_cumulative_points",
+          "code": "cumulative_pts = fencing_ranking_pts + fencing_de_pts + obstacle_pts + swimming_pts"
+        },
+        {
+          "step": 2,
+          "action": "find_leader",
+          "code": "leader_pts = max(all_athletes.cumulative_pts)"
+        },
+        {
+          "step": 3,
+          "action": "calculate_raw_delays",
+          "code": "for each athlete: raw_delay = leader_pts - athlete.cumulative_pts"
+        },
+        {
+          "step": 4,
+          "action": "apply_pack_start_cap",
+          "code": "for each athlete: start_delay = min(raw_delay, 90)"
+        },
+        {
+          "step": 5,
+          "action": "sort_athletes_by_delay",
+          "code": "athletes.sort_by(start_delay, ascending)"
+        },
+        {
+          "step": 6,
+          "action": "assign_shooting_stations",
+          "code": "for i, athlete in enumerate(sorted_athletes): athlete.station = i + 1"
+        },
+        {
+          "step": 7,
+          "action": "format_start_times",
+          "code": "for each athlete: start_time = format_mm_ss(start_delay)"
+        },
+        {
+          "step": 8,
+          "action": "group_pack_starters",
+          "code": "pack_athletes = athletes.filter(raw_delay > 90); pack_athletes.start_time = '01:30'"
+        },
+        {
+          "step": 9,
+          "action": "calculate_laser_run_mp_points",
+          "code": "laser_run_pts = 500 + (target_time_seconds - finish_time_seconds)",
+          "note": "Use the target_time_seconds from the appropriate age_group category."
+        },
+        {
+          "step": 10,
+          "action": "calculate_total_score",
+          "code": "total_score = cumulative_pts + laser_run_pts"
+        }
+      ]
+    },
+  
+    "tiebreak_rules": {
+      "description": "If athletes finish the Laser Run at the exact same time (Photo Finish cannot separate them):",
+      "order": [
+        "Best Laser Run result (running/shooting time)",
+        "Best Swimming result",
+        "Best Obstacle result",
+        "Best Fencing result",
+        "Higher Pentathlon World Ranking (PWR)"
+      ],
+      "rule_reference": "Art. 1.19.1 ii)"
+    }
+  }

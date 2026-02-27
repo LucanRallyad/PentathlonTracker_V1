@@ -1,0 +1,17 @@
+Contact: mailto:security@example.com
+Expires: 2027-12-31T23:59:59.000Z
+Preferred-Languages: en
+Canonical: https://example.com/.well-known/security.txt
+
+# Security Policy
+# Please report security vulnerabilities responsibly.
+# We will acknowledge receipt within 48 hours and provide an update within 7 days.
+
+# Scope
+# This policy applies to all systems and services under the pentathlon-tracker domain.
+
+# Disclosure Policy
+# We follow responsible disclosure practices. Please allow us 90 days to address reported vulnerabilities before public disclosure.
+
+# Acknowledgments
+# We appreciate security researchers who help keep our platform secure.

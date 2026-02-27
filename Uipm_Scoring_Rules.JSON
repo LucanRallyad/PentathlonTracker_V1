@@ -1,0 +1,426 @@
+{
+    "sport": "Modern Pentathlon",
+    "governing_body": "UIPM",
+    "description": "Scoring formulas and point calculation rules for each Modern Pentathlon event. The total competition score is the sum of MP points from all events. The Laser Run uses a handicap start where 1 MP point = 1 second of start gap.",
+    "events": {
+      "fencing": {
+        "description": "Fencing is scored in two phases: a Ranking Round (round-robin) and a Direct Elimination bracket.",
+        "ranking_round": {
+          "description": "Round-robin pool where each athlete fences every other athlete once. Points are calculated relative to a 70% win threshold.",
+          "formula": "MP_points = 250 + (victories - victories_for_250) * value_per_victory",
+          "formula_components": {
+            "total_bouts": "number_of_competitors - 1",
+            "victories_for_250": "round(total_bouts * 0.70)",
+            "value_per_victory": "Lookup from table based on total_bouts. Approximately: round(250 / victories_for_250) but use official table."
+          },
+          "base_points": 250,
+          "base_win_percentage": 0.70,
+          "example": {
+            "competitors": 36,
+            "total_bouts": 35,
+            "victories_for_250": 25,
+            "value_per_victory": 5,
+            "sample_calculation": "26 victories = 250 + (26 - 25) * 5 = 255 MP points"
+          },
+          "victory_value_table": [
+            { "total_bouts": 60, "victories_for_250": 42, "value_per_victory": 3 },
+            { "total_bouts": 59, "victories_for_250": 41, "value_per_victory": 3 },
+            { "total_bouts": 58, "victories_for_250": 41, "value_per_victory": 3 },
+            { "total_bouts": 57, "victories_for_250": 40, "value_per_victory": 3 },
+            { "total_bouts": 56, "victories_for_250": 39, "value_per_victory": 3 },
+            { "total_bouts": 55, "victories_for_250": 39, "value_per_victory": 3 },
+            { "total_bouts": 54, "victories_for_250": 38, "value_per_victory": 3 },
+            { "total_bouts": 53, "victories_for_250": 37, "value_per_victory": 3 },
+            { "total_bouts": 52, "victories_for_250": 36, "value_per_victory": 3 },
+            { "total_bouts": 51, "victories_for_250": 36, "value_per_victory": 3 },
+            { "total_bouts": 50, "victories_for_250": 35, "value_per_victory": 3 },
+            { "total_bouts": 49, "victories_for_250": 34, "value_per_victory": 3 },
+            { "total_bouts": 48, "victories_for_250": 34, "value_per_victory": 3 },
+            { "total_bouts": 47, "victories_for_250": 33, "value_per_victory": 4 },
+            { "total_bouts": 46, "victories_for_250": 32, "value_per_victory": 4 },
+            { "total_bouts": 45, "victories_for_250": 32, "value_per_victory": 4 },
+            { "total_bouts": 44, "victories_for_250": 31, "value_per_victory": 4 },
+            { "total_bouts": 43, "victories_for_250": 30, "value_per_victory": 4 },
+            { "total_bouts": 42, "victories_for_250": 29, "value_per_victory": 4 },
+            { "total_bouts": 41, "victories_for_250": 29, "value_per_victory": 4 },
+            { "total_bouts": 40, "victories_for_250": 28, "value_per_victory": 4 },
+            { "total_bouts": 39, "victories_for_250": 27, "value_per_victory": 5 },
+            { "total_bouts": 38, "victories_for_250": 27, "value_per_victory": 5 },
+            { "total_bouts": 37, "victories_for_250": 26, "value_per_victory": 5 },
+            { "total_bouts": 36, "victories_for_250": 25, "value_per_victory": 5 },
+            { "total_bouts": 35, "victories_for_250": 25, "value_per_victory": 5 },
+            { "total_bouts": 34, "victories_for_250": 24, "value_per_victory": 5 },
+            { "total_bouts": 33, "victories_for_250": 23, "value_per_victory": 6 },
+            { "total_bouts": 32, "victories_for_250": 22, "value_per_victory": 6 },
+            { "total_bouts": 31, "victories_for_250": 22, "value_per_victory": 6 },
+            { "total_bouts": 30, "victories_for_250": 21, "value_per_victory": 6 },
+            { "total_bouts": 29, "victories_for_250": 20, "value_per_victory": 7 },
+            { "total_bouts": 28, "victories_for_250": 20, "value_per_victory": 7 },
+            { "total_bouts": 27, "victories_for_250": 19, "value_per_victory": 7 },
+            { "total_bouts": 26, "victories_for_250": 18, "value_per_victory": 7 },
+            { "total_bouts": 25, "victories_for_250": 18, "value_per_victory": 7 },
+            { "total_bouts": 24, "victories_for_250": 17, "value_per_victory": 7 },
+            { "total_bouts": 23, "victories_for_250": 16, "value_per_victory": 7 },
+            { "total_bouts": 22, "victories_for_250": 15, "value_per_victory": 8 },
+            { "total_bouts": 21, "victories_for_250": 15, "value_per_victory": 8 },
+            { "total_bouts": 20, "victories_for_250": 14, "value_per_victory": 8 },
+            { "total_bouts": 19, "victories_for_250": 13, "value_per_victory": 8 }
+          ]
+        },
+        "direct_elimination": {
+          "description": "Bracket-style elimination after the Ranking Round. Points awarded by final placement.",
+          "points_by_placement": [
+            { "place": 1, "mp_points": 250 },
+            { "place": 2, "mp_points": 244 },
+            { "place": 3, "mp_points": 238 },
+            { "place": 4, "mp_points": 236 },
+            { "place": 5, "mp_points": 230 },
+            { "place": 6, "mp_points": 228 },
+            { "place": 7, "mp_points": 226 },
+            { "place": 8, "mp_points": 224 },
+            { "place": 9, "mp_points": 218 },
+            { "place": 10, "mp_points": 216 },
+            { "place": 11, "mp_points": 214 },
+            { "place": 12, "mp_points": 212 },
+            { "place": 13, "mp_points": 210 },
+            { "place": 14, "mp_points": 208 },
+            { "place": 15, "mp_points": 206 },
+            { "place": 16, "mp_points": 204 },
+            { "place": 17, "mp_points": 198 },
+            { "place": 18, "mp_points": 196 }
+          ],
+          "notes": {
+            "eli_initial_bout": "Athlete eliminated in initial bout scores 0 MP points in fencing.",
+            "dnf_later_round": "Athlete who withdraws in a later round is ranked last in that round and receives MP points accordingly."
+          }
+        },
+        "total_fencing_points": "ranking_round_points + direct_elimination_points",
+        "tiebreak_rules": [
+          "Head-to-head result between tied athletes",
+          "Most wins among tied athletes' mutual bouts",
+          "Higher Fencing World Ranking",
+          "Higher Pentathlon World Ranking"
+        ]
+      },
+  
+      "obstacle": {
+        "description": "Timed obstacle course with 8 obstacles over 70 meters. Points are time-based with each 0.33 seconds equaling 1 MP point.",
+        "formula": "MP_points = base_points - round((time_seconds - base_time_seconds) / 0.33)",
+        "formula_simplified": "Each 0.33 seconds = 1 MP point. Faster time = more points.",
+        "individual": {
+          "base_time_seconds": 15.00,
+          "base_points": 400,
+          "seconds_per_point": 0.33,
+          "age_groups": ["U15", "U17", "U19", "Junior", "Senior"],
+          "examples": [
+            { "time_seconds": 15.00, "mp_points": 400 },
+            { "time_seconds": 20.00, "mp_points": 385 },
+            { "time_seconds": 40.00, "mp_points": 325 },
+            { "time_seconds": 60.00, "mp_points": 265 },
+            { "time_seconds": 80.00, "mp_points": 205 },
+            { "time_seconds": 100.00, "mp_points": 145 },
+            { "time_seconds": 114.33, "mp_points": 100 },
+            { "time_seconds": 130.33, "mp_points": 52 }
+          ]
+        },
+        "relay": {
+          "base_time_seconds": 35.00,
+          "base_points": 400,
+          "seconds_per_point": 0.33,
+          "age_groups": ["U15", "U17", "U19", "Junior", "Senior"],
+          "examples": [
+            { "time_seconds": 35.00, "mp_points": 400 },
+            { "time_seconds": 55.00, "mp_points": 340 },
+            { "time_seconds": 80.00, "mp_points": 265 },
+            { "time_seconds": 100.00, "mp_points": 205 },
+            { "time_seconds": 135.00, "mp_points": 100 }
+          ]
+        },
+        "penalties": {
+          "first_obstacle_failure": {
+            "type": "warning",
+            "penalty_points": 0,
+            "note": "Warning issued on first failure. 10 points deducted if athlete contacts trusses/mattresses for first time."
+          },
+          "ten_point_deductions": [
+            "Failing an obstacle for the first time",
+            "Contact with vertical trusses or crash mattresses (first occurrence)",
+            "Contravening clothing/equipment guidelines",
+            "False start",
+            "Modifying start number dimensions",
+            "Deliberately discarding clothing/equipment"
+          ],
+          "elimination": [
+            "Second failure on the same obstacle",
+            "Second truss/mattress contact on same obstacle after warning",
+            "Crossing into another athlete's lane",
+            "Incorrect relay changeover",
+            "Use of prohibited devices or substances"
+          ]
+        }
+      },
+  
+      "swimming": {
+        "description": "Freestyle swimming event. Points are calculated based on time with a fixed baseline.",
+        "formula": "MP_points = 250 - floor((time_hundredths - base_time_hundredths) / 20)",
+        "formula_simplified": "Each 0.20 seconds = 1 MP point above or below 250.",
+        "categories": {
+          "senior_junior_u19_u17_u15_u13": {
+            "distance_meters": 100,
+            "relay_distance": "2 x 50m",
+            "base_time": "01:10.00",
+            "base_time_seconds": 70.00,
+            "base_points": 250,
+            "time_increment_seconds": 0.20,
+            "points_per_increment": 1,
+            "examples": [
+              { "time": "01:10.00", "mp_points": 250 },
+              { "time": "01:10.20", "mp_points": 249 },
+              { "time": "01:10.40", "mp_points": 248 },
+              { "time": "01:10.60", "mp_points": 247 },
+              { "time": "01:10.80", "mp_points": 246 },
+              { "time": "01:00.00", "mp_points": 300 },
+              { "time": "00:50.00", "mp_points": 350 },
+              { "time": "01:20.00", "mp_points": 200 },
+              { "time": "01:30.00", "mp_points": 150 }
+            ],
+            "time_rounding": "Times recorded to 1/100 second, grouped in 0.20-second bands: .00-.19, .20-.39, .40-.59, .60-.79, .80-.99"
+          },
+          "u11_u9": {
+            "distance_meters": 50,
+            "relay_distance": "2 x 25m",
+            "base_time": "00:45.00",
+            "base_time_seconds": 45.00,
+            "base_points": 250,
+            "time_increment_seconds": 0.50,
+            "points_per_increment": 1
+          }
+        },
+        "penalties": {
+          "ten_point_deductions": [
+            "Taking a step on the bottom of the pool",
+            "Not touching end wall when turning",
+            "Leaving lane before command",
+            "Leaving water by the front side",
+            "Entering water after last heat without permission",
+            "Start movement before signal",
+            "Missing/bad UIPM logo patch"
+          ],
+          "elimination": [
+            "Not breaking surface after 15m",
+            "Delaying start or disobeying orders",
+            "Jumping in before 'Take your Marks'",
+            "Using prohibited devices (fins, flippers, etc.)",
+            "Incorrect relay changeover"
+          ],
+          "disqualification": [
+            "Intentionally pushing/obstructing another swimmer",
+            "Using oil or grease",
+            "Refusing to wear conforming swimwear"
+          ]
+        }
+      },
+  
+      "laser_run": {
+        "description": "Combined running and laser-pistol shooting event. Athletes alternate between shooting series (5 hits or 50 seconds max) and 600m running laps. Uses a handicap start based on cumulative points from prior events.",
+        "formula": "MP_points = base_points - (time_seconds - base_time_seconds)",
+        "formula_simplified": "Each 1 second = 1 MP point above or below the baseline.",
+        "points_per_second": 1,
+        "shooting_rules": {
+          "hits_per_series": 5,
+          "max_time_per_series_seconds": 50,
+          "target_diameter_mm": 54.7,
+          "shooting_distance_meters": 10,
+          "note": "Athlete must hit 5 targets or wait 50 seconds before running."
+        },
+        "categories": {
+          "senior_junior_u19": {
+            "type": "individual",
+            "running_laps": 4,
+            "running_distance_per_lap_meters": 600,
+            "shooting_series": 4,
+            "total_running_distance_meters": 2400,
+            "base_points": 500,
+            "base_time": "11:40",
+            "base_time_seconds": 700,
+            "points_per_second": 1,
+            "point_range": {
+              "time_10_00": 700,
+              "time_11_40": 600,
+              "time_13_20": 500,
+              "time_15_00": 400
+            }
+          },
+          "senior_junior_u19_relay": {
+            "type": "relay",
+            "running_laps": "4 per athlete (2 athletes)",
+            "total_running_distance_meters": 4800,
+            "base_points": 500,
+            "points_per_second": 1
+          },
+          "u17": {
+            "type": "individual",
+            "base_points": 500,
+            "base_time": "08:50",
+            "base_time_seconds": 530,
+            "points_per_second": 1,
+            "point_range": {
+              "time_07_10": 700,
+              "time_08_50": 600,
+              "time_10_30": 500
+            }
+          },
+          "u15": {
+            "type": "individual",
+            "base_points": 500,
+            "base_time": "06:00",
+            "base_time_seconds": 360,
+            "points_per_second": 1,
+            "point_range": {
+              "time_04_20": 700,
+              "time_06_00": 600,
+              "time_07_40": 500
+            }
+          },
+          "u13": {
+            "type": "individual",
+            "base_points": 500,
+            "base_time": "03:40",
+            "base_time_seconds": 220,
+            "points_per_second": 1,
+            "point_range": {
+              "time_02_00": 700,
+              "time_03_40": 600,
+              "time_05_20": 500
+            }
+          },
+          "u11_u9": {
+            "type": "individual",
+            "base_points": 500,
+            "base_time": "02:20",
+            "base_time_seconds": 140,
+            "points_per_second": 1,
+            "point_range": {
+              "time_00_40": 700,
+              "time_02_20": 600,
+              "time_04_00": 500
+            }
+          }
+        },
+        "handicap_start": {
+          "description": "The Laser Run uses a staggered handicap start. The leader after Fencing + Obstacle + Swimming starts first. Other athletes start with a delay equal to their MP point deficit (1 point = 1 second). Athletes more than 90 seconds behind start in a pack at 1:30.",
+          "conversion": "1 MP point difference = 1 second start delay",
+          "max_individual_gap_seconds": 90,
+          "pack_start_threshold_seconds": 90,
+          "note": "The first athlete to cross the finish line wins the overall competition."
+        },
+        "penalties": {
+          "ten_second_time_penalties": [
+            "Contravening clothing regulations",
+            "Modifying start number dimensions",
+            "False start",
+            "Not placing pistol safely on table after series",
+            "Not touching shooting table between each shot (after warning)",
+            "Coach outside designated area assisting athlete (after first warning)"
+          ],
+          "elimination": [
+            "Not finishing the course",
+            "Not completing a shooting series or running leg",
+            "Unauthorized assistance"
+          ],
+          "disqualification": [
+            "Blatant attempt to start too early",
+            "Unsportsmanlike conduct"
+          ]
+        }
+      },
+  
+      "riding": {
+        "description": "Show jumping on an unfamiliar horse. ONLY applicable for Masters competitions.",
+        "masters_only": true,
+        "formula": "MP_points = 300 - total_penalty_points",
+        "base_points": 300,
+        "base_condition": "Clear round within the time allowed",
+        "penalties": {
+          "knockdown": {
+            "points_deducted": 7,
+            "per": "each element knocked down"
+          },
+          "disobedience": {
+            "points_deducted": 10,
+            "per": "each disobedience (refusal, run-out, resistance)"
+          },
+          "time_over": {
+            "points_deducted": 1,
+            "per": "each second exceeding time allowed"
+          },
+          "incorrect_dress": {
+            "points_deducted": 10,
+            "per": "each infringement"
+          },
+          "other_10_point": [
+            "Jumping more than allowed in warm-up",
+            "Not stopping when bell rings",
+            "Unauthorized assistance",
+            "Entering arena on foot after event start",
+            "Exiting dismounted (unless injured)",
+            "Incorrect use of whip/spurs",
+            "Not patting horse after course"
+          ],
+          "elimination_triggers": [
+            "Jumping in wrong direction",
+            "Starting before signal",
+            "Two refusals at same obstacle",
+            "Fall of athlete from horse",
+            "Exceeding time limit",
+            "Jumping out of order",
+            "Three total refusals/run-outs (individual)",
+            "Four total refusals/run-outs (relay, max 2 per rider)"
+          ]
+        },
+        "course": {
+          "obstacles": 10,
+          "double_combinations": 2,
+          "max_height_cm": 90
+        },
+        "tiebreak": "Optimal time (nearest to Time Allowed) decides ties."
+      }
+    },
+  
+    "overall_scoring": {
+      "description": "The total competition score is the sum of MP points from all events.",
+      "formula": "total_score = fencing_ranking_round + fencing_direct_elimination + obstacle + swimming + laser_run",
+      "events_order": ["Fencing", "Obstacle", "Swimming", "Laser Run"],
+      "laser_run_determines_winner": true,
+      "note": "Because the Laser Run uses a handicap start based on cumulative points, the first athlete across the finish line wins the overall competition.",
+      "tiebreak_rules": [
+        "Best result in the last phase (Laser Run)",
+        "If still tied, best result in the previous phase (Swimming)",
+        "Continue backwards through phases (Obstacle, then Fencing)",
+        "If still tied, higher Pentathlon World Ranking (PWR)"
+      ]
+    },
+  
+    "team_classification": {
+      "description": "Team results are based on the best 3 individual scores from a nation's athletes.",
+      "formula": "team_score = sum of top 3 athletes' total_scores",
+      "minimum_athletes_for_ranking": 3,
+      "notes": [
+        "If a team has 4 athletes, only the best 3 count.",
+        "Teams with more athletes in the Final are ranked higher."
+      ]
+    },
+  
+    "masters_handicap_system": {
+      "description": "Masters competitions add age-based bonus points to compensate for age differences.",
+      "base_age": 40,
+      "note": "Handicap points are added directly to the competitor's score. Varies by age from negative values (ages 30-39) to large positive values (ages 60+).",
+      "examples": [
+        { "age": 30, "tetrathlon_bonus": -40, "pentathlon_bonus": -50 },
+        { "age": 40, "tetrathlon_bonus": 0, "pentathlon_bonus": 0 },
+        { "age": 50, "tetrathlon_bonus": 40, "pentathlon_bonus": 50 },
+        { "age": 60, "tetrathlon_bonus": 120, "pentathlon_bonus": 150 },
+        { "age": 70, "tetrathlon_bonus": 240, "pentathlon_bonus": 300 }
+      ]
+    }
+  }
