@@ -1,0 +1,72 @@
+Pentathlon Tracker
+Volunteer Role & Real-Time Data Entry
+Feature Proposal
+
+February 2026
+
+
+1. The Problem
+
+During live competitions, getting scores and times recorded accurately and quickly is one of the biggest challenges event organizers face. Right now, data entry tends to be centralized with one or two people manually inputting everything, which creates a bottleneck — especially when multiple events are running at once.
+
+  "I know one thing we struggle with during events is reviewing the scores to make sure they are input correctly. I guess we could always put a note during events saying that real time scores are not final until verified by the technical director."
+  — Stakeholder Feedback
+
+On top of that, volunteers are often pulled from the sidelines on the day of the event. They don't have accounts in the system and there's no easy way for them to help with digital data entry. This means real-time score visibility for athletes and spectators is limited, and post-event verification against paper records is slow and error-prone.
+
+
+2. Proposed Solution
+
+The idea is to introduce a new Volunteer role in the system. Unlike Athletes, Officials, and Admins, Volunteers wouldn't need to create an account. Instead, they'd join through a secure link shared by an administrator via email or text. Only people with the link can access the system, so it stays controlled.
+
+Once a volunteer joins, they're assigned to a specific event and athlete. From there, they get a purpose-built dashboard on their phone tailored to whatever event they're helping with.
+
+  Access       Secure link sent via email or message — no account creation needed.
+  Scope        Volunteers can only see and interact with the specific event they're assigned to.
+  Assignment   Pre-assigned during competition setup or added on the fly by an admin during the event.
+  Dashboard    Each volunteer gets a custom interface built for the event they're supporting.
+
+
+Swimming — Timer Dashboard
+
+Swim volunteers would get a mobile timer dashboard that shows their assigned lane and athlete name so they can confirm they're timing the right person. The interface includes:
+
+  - A digital timer with Start/Stop and Lap buttons, styled to match the Pentathlon Tracker look and feel.
+  - Lap button captures split times throughout the swim for detailed performance data.
+  - When the timer is stopped, a confirmation prompt appears. The volunteer reviews the time and hits confirm to automatically upload it to the system.
+  - For higher-level competitions, a physical backup timer would still be used alongside the digital one.
+
+
+Fencing — Referee Dashboard
+
+Fencing refs would get a dashboard that mirrors the round robin and bout-order format they're already familiar with from paper scoring. Key features:
+
+  - Bouts are listed in the official order for guidance, but refs can score any bout from the full list if athletes fence out of sequence.
+  - Scores are uploaded in real time, so spectators and athletes can follow along live.
+  - A Print View option matches the exact layout of the standard paper forms, making it easy for officials to compare digital vs. paper records after the event.
+  - Once ranking round scores are finalized, the system generates DE brackets which officials can release directly to athletes, viewers, and refs.
+
+
+Remaining Events
+
+The same dashboard framework would be adapted for the remaining pentathlon disciplines. Each one would be tailored to the specific data entry needs of that event while keeping the same core flow: secure access, real-time upload, and submission confirmation.
+
+
+3. Data Verification
+
+A key part of this system is making sure volunteer-submitted data gets properly verified before it becomes official. The process works in three steps:
+
+  1. Real-Time Entry: Volunteers submit data through their dashboards. It shows up in the system immediately but is marked as preliminary — spectators and athletes can see it with a note that scores are not yet verified.
+  2. Official Review: At the end of each event, officials review the submitted data against backup paper records. The system's print view makes this comparison straightforward.
+  3. Final Confirmation: Once verified, officials confirm the results in the system, moving scores from preliminary to official status.
+
+This way you get the benefits of real-time visibility without sacrificing accuracy.
+
+
+4. Open Items
+
+A few things that are still being worked through:
+
+  - Building an efficient system for admins to add and assign volunteers on the fly during a competition, sorting them into roles and pairing them with athletes in real time.
+  - Making sure the mobile dashboards work well across a wide range of devices and screen sizes.
+  - Defining the exact dashboard features for the remaining event disciplines.
