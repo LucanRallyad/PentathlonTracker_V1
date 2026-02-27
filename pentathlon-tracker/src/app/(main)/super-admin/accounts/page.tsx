@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import { SuperAdminGuard } from '@/components/SuperAdminGuard';
+import { TopNav } from '@/components/TopNav';
 import {
   UserCog, Shield, ShieldAlert, Lock, Unlock, LogOut, KeyRound,
   Trash2, ChevronDown, ChevronUp, Search, Edit3, Check, X, Save,
@@ -11,10 +12,10 @@ import {
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 const ROLE_STYLES: Record<string, string> = {
-  super_admin: 'bg-red-100 text-red-700 border-red-200',
-  admin: 'bg-indigo-100 text-indigo-700 border-indigo-200',
-  official: 'bg-blue-100 text-blue-700 border-blue-200',
-  athlete: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+  super_admin: 'bg-[#FBE4E4] text-[#E03E3E] border-[#E03E3E]/20',
+  admin: 'bg-[#DDEBF1] text-[#0B6E99] border-[#0B6E99]/20',
+  official: 'bg-[#FAEBDD] text-[#D9730D] border-[#D9730D]/20',
+  athlete: 'bg-[#DDEDEA] text-[#0F7B6C] border-[#0F7B6C]/20',
 };
 
 const VALID_ROLES = ['super_admin', 'admin', 'official', 'athlete'];
@@ -103,48 +104,54 @@ export default function AccountManagement() {
 
   return (
     <SuperAdminGuard>
-      <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <TopNav
+        breadcrumbs={[
+          { label: 'Super Admin', href: '/super-admin/dashboard' },
+          { label: 'Accounts' },
+        ]}
+      />
+      <div className="max-w-[1100px] mx-auto px-6 py-12">
         {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-10 h-10 rounded-[4px] bg-[#D9730D] flex items-center justify-center">
             <UserCog className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Account Management</h1>
-            <p className="text-sm text-gray-500">{users?.length || 0} total accounts</p>
+            <h1 className="text-[28px] md:text-[40px] font-bold text-[#37352F] tracking-tight leading-tight">Accounts</h1>
+            <p className="text-sm text-[#787774]">{users?.length || 0} total accounts</p>
           </div>
         </div>
 
         {/* Action message */}
         {actionMessage && (
-          <div className={`px-4 py-2 rounded-lg text-sm font-medium ${
-            actionMessage.startsWith('Error') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'
+          <div className={`px-4 py-2 rounded-[4px] text-sm font-medium mb-6 ${
+            actionMessage.startsWith('Error') ? 'bg-[#FBE4E4] text-[#E03E3E]' : 'bg-[#DDEDEA] text-[#0F7B6C]'
           }`}>
             {actionMessage}
           </div>
         )}
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#9B9A97]" />
             <input
               type="text"
               placeholder="Search by name or email..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="w-full pl-8 pr-3 py-1.5 text-sm border border-[#E9E9E7] rounded-[3px] bg-white text-[#37352F] placeholder:text-[#9B9A97] focus:outline-none focus:border-[#0B6E99] transition-colors"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1.5">
             {['all', ...VALID_ROLES].map(role => (
               <button
                 key={role}
                 onClick={() => setRoleFilter(role)}
-                className={`px-3 py-2 rounded-lg text-xs font-medium capitalize transition ${
+                className={`px-2.5 py-1 text-xs font-medium rounded-[3px] border transition-colors capitalize ${
                   roleFilter === role
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'border-[#0B6E99] text-[#0B6E99] bg-[#DDEBF1]'
+                    : 'border-[#E9E9E7] text-[#787774] hover:bg-[#F7F6F3]'
                 }`}
               >
                 {role === 'all' ? 'All' : role.replace('_', ' ')}
@@ -157,7 +164,7 @@ export default function AccountManagement() {
         {isLoading ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse" />
+              <div key={i} className="h-16 bg-[#F7F6F3] rounded-[4px] animate-pulse" />
             ))}
           </div>
         ) : (
@@ -165,54 +172,54 @@ export default function AccountManagement() {
             {filteredUsers.map(user => {
               const isExpanded = expandedUser === user.id;
               return (
-                <div key={user.id} className="bg-white border rounded-lg overflow-hidden">
+                <div key={user.id} className="bg-white border border-[#E9E9E7] rounded-[4px] overflow-hidden">
                   {/* Main row */}
                   <div
-                    className="px-4 py-3 flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition"
+                    className="px-4 py-3 flex items-center gap-4 cursor-pointer hover:bg-[#FBFBFA] transition-colors"
                     onClick={() => setExpandedUser(isExpanded ? null : user.id)}
                   >
                     {/* Avatar */}
-                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 ${
-                      user.role === 'super_admin' ? 'bg-red-500' :
-                      user.role === 'admin' ? 'bg-indigo-500' :
-                      user.role === 'official' ? 'bg-blue-500' : 'bg-emerald-500'
+                    <div className={`w-9 h-9 rounded-[4px] flex items-center justify-center text-white text-sm font-bold flex-shrink-0 ${
+                      user.role === 'super_admin' ? 'bg-[#E03E3E]' :
+                      user.role === 'admin' ? 'bg-[#0B6E99]' :
+                      user.role === 'official' ? 'bg-[#D9730D]' : 'bg-[#0F7B6C]'
                     }`}>
                       {user.name.charAt(0).toUpperCase()}
                     </div>
 
                     {/* Name & Email */}
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-gray-900 truncate">{user.name}</div>
-                      <div className="text-xs text-gray-500 truncate">{user.email}</div>
+                      <div className="text-sm font-medium text-[#37352F] truncate">{user.name}</div>
+                      <div className="text-xs text-[#9B9A97] truncate">{user.email}</div>
                     </div>
 
                     {/* Role badge */}
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${ROLE_STYLES[user.role] || 'bg-gray-100 text-gray-700'}`}>
+                    <span className={`px-2.5 py-0.5 rounded-sm text-[11px] font-medium border ${ROLE_STYLES[user.role] || 'bg-[#F7F6F3] text-[#787774]'}`}>
                       {user.role.replace('_', ' ')}
                     </span>
 
                     {/* Status indicators */}
                     <div className="flex items-center gap-2">
                       {user.isLocked && (
-                        <span className="flex items-center gap-1 text-xs text-red-600">
+                        <span className="flex items-center gap-1 text-xs text-[#E03E3E]">
                           <Lock className="w-3 h-3" /> Locked
                         </span>
                       )}
                       {user.activeSessions > 0 && (
-                        <span className="flex items-center gap-1 text-xs text-green-600">
-                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        <span className="flex items-center gap-1 text-xs text-[#0F7B6C]">
+                          <div className="w-2 h-2 rounded-full bg-[#0F7B6C] animate-pulse" />
                           {user.activeSessions} session{user.activeSessions > 1 ? 's' : ''}
                         </span>
                       )}
                     </div>
 
                     {/* Expand icon */}
-                    {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                    {isExpanded ? <ChevronUp className="w-4 h-4 text-[#9B9A97]" /> : <ChevronDown className="w-4 h-4 text-[#9B9A97]" />}
                   </div>
 
                   {/* Expanded Details */}
                   {isExpanded && (
-                    <div className="border-t bg-gray-50 px-4 py-4 space-y-4">
+                    <div className="border-t border-[#E9E9E7] bg-[#F7F6F3] px-4 py-4 space-y-4">
                       {/* Info Grid */}
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <InfoField label="User ID" value={user.id} />
@@ -228,30 +235,30 @@ export default function AccountManagement() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Name */}
                         <div className="flex items-center gap-2">
-                          <label className="text-xs font-medium text-gray-500 w-12">Name</label>
+                          <label className="text-xs font-medium text-[#9B9A97] w-12">Name</label>
                           {editingField?.userId === user.id && editingField?.field === 'name' ? (
                             <div className="flex items-center gap-1 flex-1">
                               <input
                                 type="text"
                                 value={editValue}
                                 onChange={e => setEditValue(e.target.value)}
-                                className="flex-1 px-2 py-1 border rounded text-sm"
+                                className="flex-1 px-2 py-1 border border-[#E9E9E7] rounded-[3px] text-sm text-[#37352F] focus:outline-none focus:border-[#0B6E99]"
                                 onClick={e => e.stopPropagation()}
                               />
                               <button onClick={(e) => { e.stopPropagation(); saveEdit(user.id, 'name'); }}
-                                className="p-1 text-green-600 hover:bg-green-50 rounded">
+                                className="p-1 text-[#0F7B6C] hover:bg-[#DDEDEA] rounded-[3px]">
                                 <Check className="w-4 h-4" />
                               </button>
                               <button onClick={(e) => { e.stopPropagation(); setEditingField(null); }}
-                                className="p-1 text-red-500 hover:bg-red-50 rounded">
+                                className="p-1 text-[#E03E3E] hover:bg-[#FBE4E4] rounded-[3px]">
                                 <X className="w-4 h-4" />
                               </button>
                             </div>
                           ) : (
                             <div className="flex items-center gap-1 flex-1">
-                              <span className="text-sm text-gray-900">{user.name}</span>
+                              <span className="text-sm text-[#37352F]">{user.name}</span>
                               <button onClick={(e) => { e.stopPropagation(); startEditing(user.id, 'name', user.name); }}
-                                className="p-1 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded">
+                                className="p-1 text-[#9B9A97] hover:text-[#0B6E99] hover:bg-[#DDEBF1] rounded-[3px]">
                                 <Edit3 className="w-3 h-3" />
                               </button>
                             </div>
@@ -260,30 +267,30 @@ export default function AccountManagement() {
 
                         {/* Email */}
                         <div className="flex items-center gap-2">
-                          <label className="text-xs font-medium text-gray-500 w-12">Email</label>
+                          <label className="text-xs font-medium text-[#9B9A97] w-12">Email</label>
                           {editingField?.userId === user.id && editingField?.field === 'email' ? (
                             <div className="flex items-center gap-1 flex-1">
                               <input
                                 type="email"
                                 value={editValue}
                                 onChange={e => setEditValue(e.target.value)}
-                                className="flex-1 px-2 py-1 border rounded text-sm"
+                                className="flex-1 px-2 py-1 border border-[#E9E9E7] rounded-[3px] text-sm text-[#37352F] focus:outline-none focus:border-[#0B6E99]"
                                 onClick={e => e.stopPropagation()}
                               />
                               <button onClick={(e) => { e.stopPropagation(); saveEdit(user.id, 'email'); }}
-                                className="p-1 text-green-600 hover:bg-green-50 rounded">
+                                className="p-1 text-[#0F7B6C] hover:bg-[#DDEDEA] rounded-[3px]">
                                 <Check className="w-4 h-4" />
                               </button>
                               <button onClick={(e) => { e.stopPropagation(); setEditingField(null); }}
-                                className="p-1 text-red-500 hover:bg-red-50 rounded">
+                                className="p-1 text-[#E03E3E] hover:bg-[#FBE4E4] rounded-[3px]">
                                 <X className="w-4 h-4" />
                               </button>
                             </div>
                           ) : (
                             <div className="flex items-center gap-1 flex-1">
-                              <span className="text-sm text-gray-900">{user.email}</span>
+                              <span className="text-sm text-[#37352F]">{user.email}</span>
                               <button onClick={(e) => { e.stopPropagation(); startEditing(user.id, 'email', user.email); }}
-                                className="p-1 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded">
+                                className="p-1 text-[#9B9A97] hover:text-[#0B6E99] hover:bg-[#DDEBF1] rounded-[3px]">
                                 <Edit3 className="w-3 h-3" />
                               </button>
                             </div>
@@ -293,8 +300,8 @@ export default function AccountManagement() {
 
                       {/* Role Selector */}
                       <div className="flex items-center gap-3">
-                        <label className="text-xs font-medium text-gray-500">Role</label>
-                        <div className="flex gap-2">
+                        <label className="text-xs font-medium text-[#9B9A97]">Role</label>
+                        <div className="flex gap-1.5">
                           {VALID_ROLES.map(role => (
                             <button
                               key={role}
@@ -306,10 +313,10 @@ export default function AccountManagement() {
                                   }
                                 }
                               }}
-                              className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition border ${
+                              className={`px-2.5 py-1 rounded-[3px] text-xs font-medium capitalize transition-colors border ${
                                 user.role === role
                                   ? ROLE_STYLES[role]
-                                  : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
+                                  : 'bg-white text-[#787774] border-[#E9E9E7] hover:bg-[#FBFBFA]'
                               }`}
                             >
                               {role.replace('_', ' ')}
@@ -320,9 +327,9 @@ export default function AccountManagement() {
 
                       {/* Lockout Info */}
                       {user.accountLockout && (
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                          <div className="text-xs font-medium text-yellow-800 mb-1">Lockout Status</div>
-                          <div className="grid grid-cols-3 gap-2 text-xs text-yellow-700">
+                        <div className="bg-[#FBF3DB] border border-[#DFAB01]/20 rounded-[4px] p-3">
+                          <div className="text-xs font-medium text-[#D9730D] mb-1">Lockout Status</div>
+                          <div className="grid grid-cols-3 gap-2 text-xs text-[#787774]">
                             <span>Failed: {user.accountLockout.failedAttempts}</span>
                             <span>Level: {user.accountLockout.escalationLevel}</span>
                             <span>Until: {user.accountLockout.lockoutUntil ? new Date(user.accountLockout.lockoutUntil).toLocaleString() : 'Not locked'}</span>
@@ -331,19 +338,19 @@ export default function AccountManagement() {
                       )}
 
                       {/* Actions */}
-                      <div className="flex flex-wrap gap-2 pt-2 border-t">
+                      <div className="flex flex-wrap gap-2 pt-2 border-t border-[#E9E9E7]">
                         <ActionButton
                           icon={<KeyRound className="w-3.5 h-3.5" />}
                           label="Force Password Change"
                           onClick={() => performAction(user.id, 'forcePasswordChange')}
-                          color="text-amber-600 hover:bg-amber-50"
+                          color="text-[#D9730D] hover:bg-[#FAEBDD]"
                         />
                         {user.isLocked ? (
                           <ActionButton
                             icon={<Unlock className="w-3.5 h-3.5" />}
                             label="Unlock Account"
                             onClick={() => performAction(user.id, 'unlock')}
-                            color="text-green-600 hover:bg-green-50"
+                            color="text-[#0F7B6C] hover:bg-[#DDEDEA]"
                           />
                         ) : (
                           <ActionButton
@@ -354,7 +361,7 @@ export default function AccountManagement() {
                                 performAction(user.id, 'toggleActive', 'disable');
                               }
                             }}
-                            color="text-orange-600 hover:bg-orange-50"
+                            color="text-[#D9730D] hover:bg-[#FAEBDD]"
                           />
                         )}
                         <ActionButton
@@ -365,13 +372,13 @@ export default function AccountManagement() {
                               performAction(user.id, 'terminateSessions');
                             }
                           }}
-                          color="text-blue-600 hover:bg-blue-50"
+                          color="text-[#0B6E99] hover:bg-[#DDEBF1]"
                         />
                         <ActionButton
                           icon={<Trash2 className="w-3.5 h-3.5" />}
                           label="Delete Account"
                           onClick={() => deleteUser(user.id, user.name)}
-                          color="text-red-600 hover:bg-red-50"
+                          color="text-[#E03E3E] hover:bg-[#FBE4E4]"
                         />
                       </div>
                     </div>
@@ -381,7 +388,7 @@ export default function AccountManagement() {
             })}
 
             {filteredUsers.length === 0 && (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-[#9B9A97] border border-[#E9E9E7] rounded-[4px]">
                 {search || roleFilter !== 'all' ? 'No accounts match your filters' : 'No accounts found'}
               </div>
             )}
@@ -395,8 +402,8 @@ export default function AccountManagement() {
 function InfoField({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-xs text-gray-500 mb-0.5">{label}</div>
-      <div className="text-sm text-gray-900 font-mono truncate">{value}</div>
+      <div className="text-[11px] font-medium text-[#9B9A97] uppercase tracking-wider mb-0.5">{label}</div>
+      <div className="text-sm text-[#37352F] font-mono truncate">{value}</div>
     </div>
   );
 }
@@ -405,7 +412,7 @@ function ActionButton({ icon, label, onClick, color }: { icon: React.ReactNode; 
   return (
     <button
       onClick={(e) => { e.stopPropagation(); onClick(); }}
-      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-transparent transition ${color}`}
+      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] text-xs font-medium border border-[#E9E9E7] transition-colors ${color}`}
     >
       {icon}
       {label}
