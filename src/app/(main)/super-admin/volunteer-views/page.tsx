@@ -284,19 +284,19 @@ export default function VolunteerViewsPage() {
                   <button
                     key={tab.key}
                     onClick={() => handleSelect(tab.key)}
-                    className="bg-white rounded-[4px] border border-[#E9E9E7] p-5 text-left hover:border-[#0B6E99]/40 hover:shadow-sm transition-all group"
+                    className="bg-white rounded-[4px] border border-[#E9E9E7] p-5 sm:p-5 min-h-[88px] sm:min-h-0 text-left hover:border-[#0B6E99]/40 hover:shadow-sm transition-all group"
                   >
                     <div className="flex items-start gap-3">
                       <div
-                        className={`w-10 h-10 rounded-[4px] ${tab.iconBg} flex items-center justify-center flex-shrink-0`}
+                        className={`w-11 h-11 sm:w-10 sm:h-10 rounded-[4px] ${tab.iconBg} flex items-center justify-center flex-shrink-0`}
                       >
-                        <Icon className={`w-5 h-5 ${tab.iconColor}`} />
+                        <Icon className={`w-6 h-6 sm:w-5 sm:h-5 ${tab.iconColor}`} />
                       </div>
-                      <div className="min-w-0">
-                        <p className="font-semibold text-[#37352F] text-sm group-hover:text-[#0B6E99] transition-colors">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-[#37352F] text-base sm:text-sm group-hover:text-[#0B6E99] transition-colors">
                           {tab.label}
                         </p>
-                        <p className="text-xs text-[#9B9A97] mt-0.5">
+                        <p className="text-sm sm:text-xs text-[#9B9A97] mt-0.5">
                           {tab.description}
                         </p>
                       </div>
@@ -312,12 +312,12 @@ export default function VolunteerViewsPage() {
         {activeTab !== null && (
           <div className="mt-6">
             {/* Toolbar */}
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-4 flex-wrap">
               <button
                 onClick={handleBack}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-sm font-medium text-[#787774] hover:bg-[#E9E9E7] hover:text-[#37352F] transition-colors"
+                className="flex items-center gap-2 min-h-[44px] px-4 py-2.5 sm:min-h-0 sm:px-3 sm:py-1.5 rounded-[4px] text-base sm:text-sm font-medium text-[#37352F] sm:text-[#787774] border border-[#E9E9E7] sm:border-transparent hover:bg-[#F7F6F3] sm:hover:bg-[#E9E9E7] hover:text-[#37352F] transition-colors"
               >
-                <ArrowLeft size={15} />
+                <ArrowLeft size={20} className="sm:w-[15px] sm:h-[15px]" />
                 Back
               </button>
 

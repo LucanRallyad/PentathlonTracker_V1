@@ -205,6 +205,7 @@ export default function AthleteProfilePage({
             value={stats.totalCompetitions}
             sub={stats.completedCompetitions > 0 ? `${stats.completedCompetitions} scored` : undefined}
             color="#DFAB01"
+            numberRightOnMobile
           />
           <StatCard
             icon={<Target size={18} />}
@@ -212,6 +213,7 @@ export default function AthleteProfilePage({
             value={stats.highestTotal !== null ? Math.round(stats.highestTotal) : "—"}
             sub="personal best"
             color="#0B6E99"
+            numberRightOnMobile
           />
           <StatCard
             icon={<TrendingUp size={18} />}
@@ -219,6 +221,7 @@ export default function AthleteProfilePage({
             value={stats.averageTotal !== null ? Math.round(stats.averageTotal) : "—"}
             sub="across competitions"
             color="#0F7B6C"
+            numberRightOnMobile
           />
           <StatCard
             icon={<Award size={18} />}
@@ -226,6 +229,7 @@ export default function AthleteProfilePage({
             value={Object.values(scoreHistory).reduce((sum, arr) => sum + arr.length, 0)}
             sub="across all disciplines"
             color="#6940A5"
+            numberRightOnMobile
           />
         </div>
 
@@ -506,13 +510,75 @@ function buildPersonalBest(
 
 // ─── Components ──────────────────────────────────────────────────────────────
 
-function StatCard({ icon, label, value, sub, color }: { icon: React.ReactNode; label: string; value: number | string; sub?: string; color: string }) {
+function StatCard({
+  icon,
+  label,
+  value,
+  sub,
+  color,
+  numberRightOnMobile = false,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number | string;
+  sub?: string;
+  color: string;
+  numberRightOnMobile?: boolean;
+}) {
+  const valueEl = (
+    <div className="text-[26px] md:text-[22px] font-bold text-[#37352F] leading-tight">
+      {value}
+    </div>
+  );
+
+  if (numberRightOnMobile) {
+    return (
+      <div className="border border-[#E9E9E7] rounded-[4px] p-4 bg-white hover:bg-[#FAFAF8] transition-colors">
+        {/* Mobile: label/icon left, number right */}
+        <div className="flex items-start justify-between gap-3 md:hidden">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <div
+                className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: color + "18", color }}
+              >
+                {icon}
+              </div>
+            </div>
+            <div className="text-xs text-[#787774]">{label}</div>
+            {sub && <div className="text-[10px] text-[#9B9A97] mt-0.5">{sub}</div>}
+          </div>
+          <div className="flex-shrink-0">{valueEl}</div>
+        </div>
+        {/* Desktop: standard stack */}
+        <div className="hidden md:block">
+          <div className="flex items-center gap-2 mb-2">
+            <div
+              className="w-7 h-7 rounded-md flex items-center justify-center"
+              style={{ backgroundColor: color + "18", color }}
+            >
+              {icon}
+            </div>
+          </div>
+          {valueEl}
+          <div className="text-xs text-[#787774] mt-0.5">{label}</div>
+          {sub && <div className="text-[10px] text-[#9B9A97] mt-0.5">{sub}</div>}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="border border-[#E9E9E7] rounded-[4px] p-4 bg-white hover:bg-[#FAFAF8] transition-colors">
       <div className="flex items-center gap-2 mb-2">
-        <div className="w-7 h-7 rounded-md flex items-center justify-center" style={{ backgroundColor: color + "18", color }}>{icon}</div>
+        <div
+          className="w-7 h-7 rounded-md flex items-center justify-center"
+          style={{ backgroundColor: color + "18", color }}
+        >
+          {icon}
+        </div>
       </div>
-      <div className="text-[22px] font-bold text-[#37352F] leading-tight">{value}</div>
+      {valueEl}
       <div className="text-xs text-[#787774] mt-0.5">{label}</div>
       {sub && <div className="text-[10px] text-[#9B9A97] mt-0.5">{sub}</div>}
     </div>

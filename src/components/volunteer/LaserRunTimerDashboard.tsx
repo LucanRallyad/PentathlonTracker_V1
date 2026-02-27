@@ -295,10 +295,10 @@ export default function LaserRunTimerDashboard({
           .map((l, i) => (
             <div
               key={i}
-              className="flex justify-between text-sm font-mono bg-white rounded-[4px] border border-[#E9E9E7] px-3 py-1.5"
+              className="flex justify-between items-center text-sm font-mono bg-white rounded-[4px] border border-[#E9E9E7] px-3 py-2 sm:py-1.5"
             >
               <span className="text-[#787774]">Lap {l.lapNumber}</span>
-              <span className="text-[#37352F]">{formatTimeSeconds(l.splitSeconds)}</span>
+              <span className="text-[#37352F] text-base sm:text-sm font-semibold">{formatTimeSeconds(l.splitSeconds)}</span>
             </div>
           ))}
       </div>

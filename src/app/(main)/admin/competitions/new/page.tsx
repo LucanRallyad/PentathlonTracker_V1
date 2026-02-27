@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { TopNav } from "@/components/TopNav";
 import { DISCIPLINE_NAMES } from "@/lib/scoring/constants";
+import { fetchWithCsrf } from "@/lib/utils/csrf";
 
 const AGE_CATEGORIES = ["U9", "U11", "U13", "U15", "U17", "U19", "Junior", "Senior", "Masters"];
 const COMPETITION_TYPES = ["Individual", "Relay", "Team"];
@@ -99,7 +100,7 @@ export default function NewCompetitionPage() {
     setSaving(true);
 
     try {
-      const res = await fetch("/api/competitions", {
+      const res = await fetchWithCsrf("/api/competitions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -108,19 +109,34 @@ export default function NewCompetitionPage() {
           ageCategory: selectedAgeCategories.join(","),
         }),
       });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        const message = body?.error || "Failed to create competition";
+        window.alert(message);
+        return;
+      }
+
       const competition = await res.json();
 
       // Create events
       for (let i = 0; i < selectedDisciplines.length; i++) {
         const discipline = selectedDisciplines[i];
-        const schedule = eventSchedules[discipline] || { scheduledStart: "", dayLabel: "", durationMinutes: 60 };
+        const schedule = eventSchedules[discipline] || {
+          scheduledStart: "",
+          dayLabel: "",
+          durationMinutes: 60,
+        };
         const durationMinutes = schedule.durationMinutes || 60;
         let scheduledEnd: string | null = null;
         if (schedule.scheduledStart) {
           const startDate = new Date(schedule.scheduledStart);
-          scheduledEnd = new Date(startDate.getTime() + durationMinutes * 60 * 1000).toISOString();
+          scheduledEnd = new Date(
+            startDate.getTime() + durationMinutes * 60 * 1000
+          ).toISOString();
         }
-        await fetch(`/api/competitions/${competition.id}/events`, {
+
+        await fetchWithCsrf(`/api/competitions/${competition.id}/events`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -138,6 +154,7 @@ export default function NewCompetitionPage() {
       router.push(`/admin`);
     } catch (err) {
       console.error(err);
+      window.alert("An unexpected error occurred while creating the competition.");
     } finally {
       setSaving(false);
     }

@@ -162,10 +162,10 @@ export default function ObstacleTimerDashboard({
       {completedResults.map((r, i) => (
         <div
           key={r.athleteId}
-          className="flex justify-between text-sm font-mono bg-white rounded-[4px] border border-[#E9E9E7] px-3 py-1.5 mb-1"
+          className="flex justify-between items-center text-sm font-mono bg-white rounded-[4px] border border-[#E9E9E7] px-3 py-2 sm:py-1.5 mb-1"
         >
-          <span className="text-[#787774]">{i + 1}. {r.name}</span>
-          <span className="text-[#37352F]">{formatTime(r.time)}</span>
+          <span className="text-[#787774] truncate">{i + 1}. {r.name}</span>
+          <span className="text-[#37352F] text-base sm:text-sm font-semibold flex-shrink-0 ml-2">{formatTime(r.time)}</span>
         </div>
       ))}
     </div>
@@ -234,10 +234,10 @@ export default function ObstacleTimerDashboard({
               {completedResults.map((r, i) => (
                 <div
                   key={r.athleteId}
-                  className="flex justify-between bg-[#F7F6F3] rounded-[4px] px-4 py-2"
+                  className="flex justify-between items-center bg-[#F7F6F3] rounded-[4px] px-4 py-2.5 sm:py-2"
                 >
-                  <span className="text-[#787774] text-sm">{i + 1}. {r.name}</span>
-                  <span className="font-mono text-sm text-[#37352F]">{formatTime(r.time)}</span>
+                  <span className="text-[#787774] text-sm truncate">{i + 1}. {r.name}</span>
+                  <span className="font-mono text-base sm:text-sm font-semibold text-[#37352F] flex-shrink-0 ml-2">{formatTime(r.time)}</span>
                 </div>
               ))}
             </div>

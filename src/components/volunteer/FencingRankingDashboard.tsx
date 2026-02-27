@@ -346,40 +346,40 @@ export default function FencingRankingDashboard({
             key={key}
             onClick={() => !result && openScoring(a, b, i)}
             disabled={!!result}
-            className={`w-full flex items-center justify-between px-4 py-3 rounded-[4px] min-h-[48px] text-left transition-colors ${
+            className={`w-full flex items-center justify-between px-4 py-3 rounded-[4px] min-h-[48px] sm:min-h-[48px] text-left transition-colors ${
               result
                 ? "bg-[#F7F6F3] opacity-60 border border-[#E9E9E7]"
                 : "bg-white border border-[#E9E9E7] active:bg-[#EFEFEF]"
             }`}
           >
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-[#9B9A97] w-6">{i + 1}.</span>
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="text-xs text-[#9B9A97] w-6 flex-shrink-0">{i + 1}.</span>
               <span
                 className={
                   result?.winner === athleteA.id
-                    ? "text-[#0F7B6C] font-semibold"
-                    : "text-[#37352F]"
+                    ? "text-[#0F7B6C] font-semibold truncate"
+                    : "text-[#37352F] truncate"
                 }
               >
                 {athleteA.name}
               </span>
-              <span className="text-[#9B9A97] text-xs">vs</span>
+              <span className="text-[#9B9A97] text-xs flex-shrink-0">vs</span>
               <span
                 className={
                   result?.winner === athleteB.id
-                    ? "text-[#0F7B6C] font-semibold"
-                    : "text-[#37352F]"
+                    ? "text-[#0F7B6C] font-semibold truncate"
+                    : "text-[#37352F] truncate"
                 }
               >
                 {athleteB.name}
               </span>
             </div>
             {result ? (
-              <span className="text-xs text-[#9B9A97]">
+              <span className="text-sm sm:text-xs font-mono font-semibold text-[#37352F] flex-shrink-0 ml-2">
                 {result.winnerScore}–{result.loserScore}
               </span>
             ) : (
-              <span className="text-xs text-[#0B6E99] font-medium">Score &#8594;</span>
+              <span className="text-xs text-[#0B6E99] font-medium flex-shrink-0 ml-2">Score &#8594;</span>
             )}
           </button>
         );

@@ -37,32 +37,32 @@ export function TopNav({ breadcrumbs = [] }: { breadcrumbs?: Breadcrumb[] }) {
   }, [router, fallbackBackHref]);
 
   return (
-    <header className="h-11 flex items-center justify-between px-3 md:px-4 border-b border-[#E9E9E7] bg-white">
-      <div className="flex items-center gap-2 min-w-0">
+    <header className="h-12 md:h-11 flex items-center justify-between px-3 md:px-4 border-b border-[#E9E9E7] bg-white">
+      <div className="flex items-center gap-2 min-w-0 flex-1">
         {/* Hamburger button - mobile only */}
         <button
           onClick={toggleMobile}
-          className="p-1.5 rounded-[3px] hover:bg-[#EFEFEF] text-[#787774] transition-colors md:hidden flex-shrink-0"
+          className="p-2.5 rounded-[3px] hover:bg-[#EFEFEF] text-[#787774] transition-colors md:hidden flex-shrink-0 -ml-0.5"
           aria-label="Open menu"
         >
-          <Menu size={18} />
+          <Menu size={20} />
         </button>
 
         {breadcrumbs.length > 1 && (
           <button
             onClick={handleBack}
-            className="flex items-center gap-1 px-2 py-1 rounded-[3px] border border-[#E9E9E7] text-xs text-[#787774] hover:bg-[#F7F6F3] hover:text-[#37352F] transition-colors flex-shrink-0"
+            className="flex items-center gap-2 min-h-[40px] md:min-h-0 px-3 py-2 md:px-2 md:py-1 rounded-[4px] border border-[#E9E9E7] text-sm md:text-xs text-[#37352F] md:text-[#787774] hover:bg-[#F7F6F3] hover:border-[#D3D1CB] md:hover:text-[#37352F] transition-colors flex-shrink-0 font-medium md:font-normal"
             aria-label="Go back"
           >
-            <ChevronLeft size={14} />
-            <span className="hidden sm:inline">Back</span>
+            <ChevronLeft size={18} className="md:w-3.5 md:h-3.5" />
+            <span>Back</span>
           </button>
         )}
 
-        <nav className="flex items-center gap-1 text-sm min-w-0 overflow-hidden">
+        <nav className="flex items-center gap-1 text-sm min-w-0 overflow-hidden flex-1">
           {breadcrumbs.map((crumb, i) => (
             <span key={i} className="flex items-center gap-1 min-w-0">
-              {i > 0 && <span className="text-[#D3D1CB] mx-0.5 flex-shrink-0">/</span>}
+              {i > 0 && <span className="text-[#D3D1CB] mx-0.5 flex-shrink-0 hidden sm:inline">/</span>}
               {crumb.href ? (
                 <Link
                   href={crumb.href}
@@ -71,7 +71,7 @@ export function TopNav({ breadcrumbs = [] }: { breadcrumbs?: Breadcrumb[] }) {
                   {crumb.label}
                 </Link>
               ) : (
-                <span className="text-[#37352F] font-medium truncate">{crumb.label}</span>
+                <span className="text-[#37352F] font-medium truncate text-left">{crumb.label}</span>
               )}
             </span>
           ))}
